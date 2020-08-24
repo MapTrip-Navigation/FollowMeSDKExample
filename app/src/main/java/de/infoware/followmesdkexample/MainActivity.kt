@@ -10,6 +10,7 @@ import de.infoware.followmesdkexample.dialog.DialogFragment
 import de.infoware.followmesdkexample.filelist.FilelistFragment
 import de.infoware.followmesdkexample.mainmenu.MainMenuFragment
 import de.infoware.followmesdkexample.ui.main.MainFragment
+import kotlin.properties.Delegates
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,6 +27,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val viewModel: MainActivityViewModel by viewModels()
+        Log.e(TAG, viewModel.alreadyInitalized.toString())
 
         initListener(viewModel)
 
@@ -34,7 +36,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun initListener(viewModel:MainActivityViewModel) {
         val initObserver = Observer<Boolean> { isInitialized ->
-            Log.d(TAG, "init Observer")
             if(isInitialized) {
                 switchToMainMenuFragment()
             }
