@@ -8,8 +8,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.setFragmentResultListener
+import de.infoware.android.api.Navigation
 import de.infoware.followmesdkexample.R
-import de.infoware.followmesdkexample.followme.data.FollowMeTour
+import de.infoware.followmesdkexample.sound.MaptripTTSManager
 
 class CompanionMapFragment : Fragment() {
 
@@ -20,12 +21,14 @@ class CompanionMapFragment : Fragment() {
     }
 
     private lateinit var viewModel: CompanionMapViewModel
-    private lateinit var selectedFollowMeFile: FollowMeTour
+    private lateinit var selectedFileName: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setFragmentResultListener("selectedFile") { key, bundle ->
-            Log.e(TAG, "File: " + bundle.getString("selectedFileBundle"))
+            selectedFileName = if(bundle.getString("selectedFileBundle") != null) bundle.getString("selectedFileBundle")!! else ""
+            viewModel.startFollowMeTour(selectedFileName)
         }
     }
 
@@ -39,7 +42,10 @@ class CompanionMapFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(CompanionMapViewModel::class.java)
-        // TODO: Use the ViewModel
+
+        Navigation.registerNavigationListener(viewModel)
+        MaptripTTSManager.Instance()?.setListener(viewModel)
+        MaptripTTSManager.Instance()?.enableTTS(requireActivity().applicationContext)
     }
 
 }

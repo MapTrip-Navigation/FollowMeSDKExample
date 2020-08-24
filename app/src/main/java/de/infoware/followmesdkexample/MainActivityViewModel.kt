@@ -44,7 +44,7 @@ class MainActivityViewModel : ViewModel(), ApiLicenseListener, ApiInitListener {
         }
     }
 
-    private fun registerApiListener() {
+    private fun registerGPSListener() {
         Log.d(TAG, "GPS Listener registered")
         Gps.registerGpsListener {
                 latitude, longitude, altitude, speedMetersPerSecond,
@@ -67,6 +67,7 @@ class MainActivityViewModel : ViewModel(), ApiLicenseListener, ApiInitListener {
         Log.d(TAG, "onApiInitialized")
         isInitialized.postValue(true)
         alreadyInitalized = true
+        registerGPSListener()
 
         /*
         Navigation.setAllowedComputationSite(ComputationSite.ONBOARD)

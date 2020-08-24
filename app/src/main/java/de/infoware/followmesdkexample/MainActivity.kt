@@ -27,11 +27,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         val viewModel: MainActivityViewModel by viewModels()
-        Log.e(TAG, viewModel.alreadyInitalized.toString())
 
         initListener(viewModel)
 
         viewModel.initSDK(applicationContext)
+    }
+
+    override fun onBackPressed() {
+        //super.onBackPressed()
     }
 
     private fun initListener(viewModel:MainActivityViewModel) {
