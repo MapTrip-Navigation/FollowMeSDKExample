@@ -6,7 +6,10 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import de.infoware.followmesdkexample.MainActivity
 import de.infoware.followmesdkexample.R
+import de.infoware.followmesdkexample.followme.FollowMeFileRepo
+import kotlinx.android.synthetic.main.main_menu_fragment.*
 
 class MainMenuFragment : Fragment() {
 
@@ -27,6 +30,12 @@ class MainMenuFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(MainMenuViewModel::class.java)
         // TODO: Use the ViewModel
+
+        initListener()
+    }
+
+    private fun initListener() {
+        btnShowList.setOnClickListener { (activity as MainActivity).switchToFilelistFragment() }
     }
 
 }

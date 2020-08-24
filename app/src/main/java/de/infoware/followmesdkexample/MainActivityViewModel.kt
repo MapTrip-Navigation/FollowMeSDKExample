@@ -14,6 +14,7 @@ import de.infoware.followmesdkexample.utils.Constants
 class MainActivityViewModel : ViewModel(), ApiLicenseListener, ApiInitListener {
     private val TAG = "FollowMeSDKExample"
     val isInitialized: MutableLiveData<Boolean> = MutableLiveData<Boolean>()
+    var alreadyInitalized = false
 
     fun initSDK(context: Context) {
         val compParams: ComputationSiteParameters
@@ -28,8 +29,6 @@ class MainActivityViewModel : ViewModel(), ApiLicenseListener, ApiInitListener {
 
         ApiHelper.Instance().addInitListener(this)
         ApiHelper.Instance().addLicenseListener(this)
-        Log.e(TAG, appPath)
-        Log.e(TAG, dataPath)
         ApiHelper.Instance().initPaths(appPath, dataPath)
 
         var initErr: ApiError? = null
@@ -67,6 +66,7 @@ class MainActivityViewModel : ViewModel(), ApiLicenseListener, ApiInitListener {
 
         Log.d(TAG, "onApiInitialized")
         isInitialized.postValue(true)
+        alreadyInitalized = true
 
         /*
         Navigation.setAllowedComputationSite(ComputationSite.ONBOARD)
