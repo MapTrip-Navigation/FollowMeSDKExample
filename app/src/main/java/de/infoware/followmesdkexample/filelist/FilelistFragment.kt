@@ -11,14 +11,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.setFragmentResult
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
-import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import de.infoware.followmesdkexample.MainActivity
 import de.infoware.followmesdkexample.R
 import de.infoware.followmesdkexample.filelist.adapter.FileListAdapter
-import de.infoware.followmesdkexample.followme.FollowMeFileRepo
 import de.infoware.followmesdkexample.followme.data.FollowMeTour
 import kotlinx.android.synthetic.main.filelist_fragment.*
 
@@ -73,7 +70,6 @@ class FilelistFragment : Fragment() {
                 })
                 .setNeutralButton("Cancel", null)
                 .show()
-            //(activity as MainActivity).switchToDialogFragment()
         }
 
         adapter.followMeTourObservable.observe(this.viewLifecycleOwner, selectedFollowMeFileObserver)

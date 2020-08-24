@@ -9,7 +9,7 @@ import de.infoware.followmesdkexample.MainActivity
 import de.infoware.followmesdkexample.followme.FollowMeFileRepo
 import de.infoware.followmesdkexample.followme.data.FollowMeTour
 
-class FilelistViewModel : ViewModel {
+class FilelistViewModel() : ViewModel() {
 
     private val TAG = "FilelistViewModel"
 
@@ -17,11 +17,10 @@ class FilelistViewModel : ViewModel {
         MutableLiveData<List<FollowMeTour>>()
     }
 
-    constructor() {
+    var followMeFiles = listOf<FollowMeTour>()
 
-    }
-
-    private fun initListener() {
-
+    init {
+        followMeFiles = FollowMeFileRepo.loadAllFilesInRoute()
+        availableFollowMeFiles.postValue(followMeFiles)
     }
 }
