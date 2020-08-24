@@ -46,9 +46,7 @@ class FilelistFragment : Fragment() {
         adapter = FileListAdapter(listOf())
         rvFileList.adapter = adapter
 
-
         initListener()
-        FollowMeFileRepo.loadAllFilesInRoute()
     }
 
     fun initListener() {
@@ -56,7 +54,7 @@ class FilelistFragment : Fragment() {
             adapter.setList(availableFollowMeFiles)
         }
 
-        FollowMeFileRepo.routeFiles.observe(this.viewLifecycleOwner, availableFollowMeFilesObserver)
+        viewModel.availableFollowMeFiles.observe(this.viewLifecycleOwner, availableFollowMeFilesObserver)
 
         val selectedFollowMeFileObserver = Observer<FollowMeTour> { selectedFile ->
             AlertDialog.Builder(this.context)

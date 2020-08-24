@@ -27,7 +27,7 @@ object FollowMeFileRepo {
         return loadedFiles;
     }
 
-    fun loadAllFilesInRoute() {
+    fun loadAllFilesInRoute() : List<FollowMeTour> {
         val followMeFiles = mutableListOf<FollowMeTour>()
 
         var tour: FollowMeTour
@@ -36,7 +36,7 @@ object FollowMeFileRepo {
         val directory = File(path)
         if(!directory.exists()) {
             // TODO no directory found
-            return
+            return followMeFiles
         }
         val files = directory.listFiles()
 
@@ -55,9 +55,10 @@ object FollowMeFileRepo {
 
         if(followMeFiles.isEmpty()) {
             // TODO no files found
-            return
+            return followMeFiles
         }
         loadedFiles = followMeFiles
         routeFiles.postValue(followMeFiles)
+        return followMeFiles
     }
 }
