@@ -1,17 +1,19 @@
 package de.infoware.followmesdkexample.companionmap
 
+import android.content.Context
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import de.infoware.android.api.*
-import de.infoware.android.api.enums.ApiError
-import de.infoware.android.api.enums.CrosswayStreetType
-import de.infoware.android.api.enums.FmrActionType
-import de.infoware.android.api.enums.VehicleWarningType
+import de.infoware.android.api.enums.*
 import de.infoware.followmesdkexample.followme.FollowMeFileRepo
 import de.infoware.followmesdkexample.followme.data.FollowMeTour
 import de.infoware.followmesdkexample.sound.MaptripTTSListener
 import de.infoware.followmesdkexample.sound.MaptripTTSManager
 import java.io.File
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListener,
     FollowMeRouteListener, TaskListener {
@@ -19,7 +21,22 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     private val TAG = "CompanionMapViewModel"
     private var currentFollowMeRoute: FollowMeRoute? = null
     private var selectedFile: FollowMeTour? = null
-    private var isSimulation = false;
+    private var isSimulation = false
+    private var mapviewer: Mapviewer? = null
+
+    val currentStreetName = MutableLiveData<String>()
+    val nextStreetName = MutableLiveData<String>()
+    val metersToCrossing = MutableLiveData<Double>()
+    val secondsToCrossing = MutableLiveData<Double>()
+    val progress = MutableLiveData<Double>()
+
+    init {
+        Log.e(TAG, "init")
+    }
+
+    fun setMapViewer(mapviewer: Mapviewer) {
+        this.mapviewer = mapviewer
+    }
 
     fun startFollowMeTour(filename:String, simulating: Boolean = true) {
         if(filename != "") {
@@ -44,14 +61,43 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
         }
     }
 
+    fun autozoomToCurrentPosition() {
+        mapviewer?.resumeLocationTracking()
+    }
+
+    fun switchPerspective() {
+        val perspective = mapviewer?.perspective
+        var newPerspective: MapPerspective? = null
+
+        Log.d(TAG, "Current perspective: " + perspective)
+
+        when (perspective) {
+            MapPerspective.PERSPECTIVE_2D_DRIVING_DIRECTION ->
+                newPerspective = MapPerspective.PERSPECTIVE_2D_NORTHWARD
+
+            MapPerspective.PERSPECTIVE_2D_NORTHWARD ->
+                newPerspective = MapPerspective.PERSPECTIVE_3D
+
+            MapPerspective.PERSPECTIVE_3D ->
+                newPerspective = MapPerspective.PERSPECTIVE_2D_DRIVING_DIRECTION
+
+            else -> return
+        }
+        // activate chosen perspective
+        mapviewer?.perspective = newPerspective
+    }
+
     override fun taskFinished(task: BaseTask) {
         if(task.returnValue == ApiError.OK) {
             currentFollowMeRoute!!.start(isSimulation)
         }
     }
 
-    override fun taskProgress(p0: BaseTask) {
-
+    override fun taskProgress(task: BaseTask) {
+        if(task.returnValue == ApiError.OK) {
+            val roundedProgress = BigDecimal(task.progress).setScale(2, RoundingMode.HALF_EVEN).toDouble()
+            this.progress.postValue(roundedProgress)
+        }
     }
 
     override fun followMeAction(p0: FmrActionType?, p1: String?): Boolean {
@@ -60,7 +106,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
         Log.e(TAG, p1)
 
         if(p1 != null) {
-            MaptripTTSManager.Instance()?.speak(p1, true)
+            MaptripTTSManager.Instance()?.speak(p1, false)
         }
         return true
     }
@@ -71,7 +117,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
         Log.e(TAG, p1)
 
         if(p1 != null) {
-            MaptripTTSManager.Instance()?.speak(p1, true)
+            MaptripTTSManager.Instance()?.speak(p1, false)
         }
         return true
     }
@@ -97,6 +143,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     }
 
     override fun beforeAdviceStarts(speechIndependentSentence: String?, additionalAdviceInfo: String?, sentence: String?): Boolean {
+
         if(sentence != null) {
             MaptripTTSManager.Instance()?.speak(sentence, true)
         }
@@ -109,14 +156,17 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     }
 
     override fun crossingInfoReceived(
-        p0: String?,
-        p1: String?,
-        p2: String?,
-        p3: CrosswayStreetType?,
-        p4: Double,
-        p5: Double
+        actualStreetName: String?,
+        nextStreetName: String?,
+        pictoFileName: String?,
+        streetType: CrosswayStreetType?,
+        metersToCrossing: Double,
+        secondsToCrossing: Double
     ) {
-
+        this.nextStreetName.postValue(nextStreetName)
+        this.currentStreetName.postValue(actualStreetName)
+        this.metersToCrossing.postValue(metersToCrossing)
+        this.secondsToCrossing.postValue(secondsToCrossing)
     }
 
     override fun destinationReached(p0: Int) {

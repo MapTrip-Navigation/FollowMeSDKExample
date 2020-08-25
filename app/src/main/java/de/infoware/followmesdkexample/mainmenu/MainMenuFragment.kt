@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.ViewModelProvider
 import de.infoware.followmesdkexample.MainActivity
 import de.infoware.followmesdkexample.R
 import de.infoware.followmesdkexample.followme.FollowMeFileRepo
@@ -28,7 +29,7 @@ class MainMenuFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(MainMenuViewModel::class.java)
+        viewModel = ViewModelProvider(requireActivity()).get(MainMenuViewModel::class.java)
         // TODO: Use the ViewModel
 
         initListener()

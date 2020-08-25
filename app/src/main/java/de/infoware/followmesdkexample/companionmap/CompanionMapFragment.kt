@@ -8,9 +8,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.setFragmentResultListener
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import de.infoware.android.api.IwMapView
+import de.infoware.android.api.Mapviewer
 import de.infoware.android.api.Navigation
 import de.infoware.followmesdkexample.R
 import de.infoware.followmesdkexample.sound.MaptripTTSManager
+import kotlinx.android.synthetic.main.companion_map_fragment.*
 
 class CompanionMapFragment : Fragment() {
 
@@ -22,13 +28,17 @@ class CompanionMapFragment : Fragment() {
 
     private lateinit var viewModel: CompanionMapViewModel
     private lateinit var selectedFileName: String
+    private lateinit var mapView: IwMapView
+    private lateinit var mapViewer: Mapviewer
+
+    private val bundleObserver: MutableLiveData<String> = MutableLiveData<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setFragmentResultListener("selectedFile") { key, bundle ->
             selectedFileName = if(bundle.getString("selectedFileBundle") != null) bundle.getString("selectedFileBundle")!! else ""
-            viewModel.startFollowMeTour(selectedFileName)
+            bundleObserver.postValue(selectedFileName)
         }
     }
 
@@ -41,11 +51,34 @@ class CompanionMapFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(CompanionMapViewModel::class.java)
+        viewModel = ViewModelProvider(requireActivity()).get(CompanionMapViewModel::class.java)
+
+        mapView = map
+
+        initListener()
 
         Navigation.registerNavigationListener(viewModel)
         MaptripTTSManager.Instance()?.setListener(viewModel)
         MaptripTTSManager.Instance()?.enableTTS(requireActivity().applicationContext)
+
+
+
+    }
+
+    private fun initListener() {
+        val filenameBundleObserver = Observer<String> { filename ->
+            Log.e(TAG, "filename gotten")
+            //viewModel.startFollowMeTour(filename)
+        }
+
+        this.bundleObserver.observe(this.viewLifecycleOwner, filenameBundleObserver)
+
+        mapView.setOnMapviewerReadyListener {
+            Log.e(TAG, "mapviewer ready")
+            mapViewer = mapView.mapviewer
+            viewModel.setMapViewer(mapViewer)
+            viewModel.startFollowMeTour(selectedFileName)
+        }
     }
 
 }

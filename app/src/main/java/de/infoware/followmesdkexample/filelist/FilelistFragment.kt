@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import de.infoware.followmesdkexample.MainActivity
 import de.infoware.followmesdkexample.R
@@ -40,7 +41,7 @@ class FilelistFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(FilelistViewModel::class.java)
+        viewModel = ViewModelProvider(requireActivity()).get(FilelistViewModel::class.java)
 
         rvFileList.layoutManager = LinearLayoutManager(requireActivity().applicationContext)
         adapter = FileListAdapter(listOf())
