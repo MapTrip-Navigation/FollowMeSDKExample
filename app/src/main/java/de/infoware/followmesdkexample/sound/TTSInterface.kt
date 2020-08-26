@@ -12,5 +12,7 @@ interface TTSInterface {
 
     fun setMute(mute: Boolean)
 
+    fun isMute(): Boolean
+
     fun unInit()
 }

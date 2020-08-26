@@ -16,7 +16,7 @@ object FollowMeFileRepo {
 
     fun getFileByName(filename:String) : FollowMeTour? {
         loadedFiles.forEach { file ->
-            if(file.file.nameWithoutExtension === filename) {
+            if(file.file.nameWithoutExtension == filename) {
                 return file
             }
         }

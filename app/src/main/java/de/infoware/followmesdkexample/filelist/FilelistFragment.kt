@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import de.infoware.followmesdkexample.MainActivity
 import de.infoware.followmesdkexample.R
@@ -40,7 +41,7 @@ class FilelistFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(FilelistViewModel::class.java)
+        viewModel = ViewModelProvider(requireActivity()).get(FilelistViewModel::class.java)
 
         rvFileList.layoutManager = LinearLayoutManager(requireActivity().applicationContext)
         adapter = FileListAdapter(listOf())
@@ -62,9 +63,14 @@ class FilelistFragment : Fragment() {
                 .setMessage("Do you want to start the navigation from File ${selectedFile.file.nameWithoutExtension}?")
                 .setPositiveButton("Start Guidence", DialogInterface.OnClickListener {
                         dialog, which ->
-                    setFragmentResult("selectedFile", bundleOf("selectedFileBundle" to selectedFile.file.nameWithoutExtension))
+                    setFragmentResult("selectedFile", bundleOf("selectedFileBundle" to selectedFile.file.nameWithoutExtension, "simulate" to false))
                     (activity as MainActivity).switchToCompanionMapFragment()
 
+                })
+                .setNegativeButton("Start Simulation", DialogInterface.OnClickListener {
+                        dialog, which ->
+                    setFragmentResult("selectedFile", bundleOf("selectedFileBundle" to selectedFile.file.nameWithoutExtension, "simulate" to true))
+                    (activity as MainActivity).switchToCompanionMapFragment()
                 })
                 .setNeutralButton("Cancel", null)
                 .show()

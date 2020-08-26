@@ -22,7 +22,7 @@ class MapViewTester {
         var newPerspective: MapPerspective? = null
 
         Log.d(TAG, "Current perspective: " + perspective)
-        // get the active perspective and chose the following one
+
         when (perspective) {
             MapPerspective.PERSPECTIVE_2D_DRIVING_DIRECTION ->
                 newPerspective = MapPerspective.PERSPECTIVE_2D_NORTHWARD
