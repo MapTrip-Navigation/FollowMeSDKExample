@@ -115,6 +115,10 @@ class MaptripTTS : TTSInterface{
         isMute = mute
     }
 
+    override fun isMute(): Boolean {
+        return isMute
+    }
+
     override fun unInit() {
         stop()
         try {

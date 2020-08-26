@@ -1,11 +1,9 @@
 package de.infoware.followmesdkexample
 
-import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
-import android.view.Window
 import androidx.activity.viewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -18,14 +16,13 @@ import de.infoware.followmesdkexample.dialog.DialogFragment
 import de.infoware.followmesdkexample.filelist.FilelistFragment
 import de.infoware.followmesdkexample.mainmenu.MainMenuFragment
 import de.infoware.followmesdkexample.ui.main.MainFragment
-import kotlin.properties.Delegates
+import java.io.File
 
 class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
 
     private val TAG = "FollowMeSDKExample"
 
     private var alreadyInitalized = false
-    private lateinit var context: Context
 
     val isInitialized: MutableLiveData<Boolean> = MutableLiveData<Boolean>()
 
@@ -46,7 +43,7 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
 
         initListener()
 
-        this.initSDK(applicationContext)
+        this.initSDK()
     }
 
     override fun onBackPressed() {
@@ -88,8 +85,7 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
             .commitNow()
     }
 
-    fun initSDK(context: Context) {
-        this.context = context
+    fun initSDK() {
 
         val compParams: ComputationSiteParameters
 
@@ -108,7 +104,7 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
         var initErr: ApiError? = null
 
         try {
-            initErr = ApiHelper.Instance().initialize(context, compParams, this)
+            initErr = ApiHelper.Instance().initialize(applicationContext, compParams, this)
         } catch (exc: RuntimeException) {
             Log.e(TAG, "ApiHelper initialize failed. RuntimeException: " + exc.message)
         }
@@ -118,11 +114,10 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
         }
     }
 
-    private fun startGPSProcessing(): ApiError {
-        ApiHelper.Instance().locationManager = IwLocationManagerGPS(context)
-        // center map based on the location
-        //return Mapviewer.setLocationProcessingMode(LocationProcessingMode.CENTER_MAP.getIntVal() |LocationProcessingMode.CAR_ICON.getIntVal());
-        return ApiError.OK
+    private fun startGPSProcessing() {
+        Gps.useLogForSimulation("")
+        ApiHelper.Instance().locationManager = IwLocationManagerGPS(this)
+        ApiHelper.Instance().locationManager.enableLocationUpdates()
     }
 
     private fun registerGPSListener() {

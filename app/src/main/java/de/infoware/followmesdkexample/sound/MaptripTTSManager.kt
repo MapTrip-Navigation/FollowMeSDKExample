@@ -33,6 +33,10 @@ class MaptripTTSManager : MaptripTTSListener {
         }
     }
 
+    fun isMute() : Boolean {
+        return tts!!.isMute()
+    }
+
     fun setListener(l: MaptripTTSListener) {
         listener = l
     }

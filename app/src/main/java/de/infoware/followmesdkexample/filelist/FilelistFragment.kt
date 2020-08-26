@@ -63,9 +63,14 @@ class FilelistFragment : Fragment() {
                 .setMessage("Do you want to start the navigation from File ${selectedFile.file.nameWithoutExtension}?")
                 .setPositiveButton("Start Guidence", DialogInterface.OnClickListener {
                         dialog, which ->
-                    setFragmentResult("selectedFile", bundleOf("selectedFileBundle" to selectedFile.file.nameWithoutExtension))
+                    setFragmentResult("selectedFile", bundleOf("selectedFileBundle" to selectedFile.file.nameWithoutExtension, "simulate" to false))
                     (activity as MainActivity).switchToCompanionMapFragment()
 
+                })
+                .setNegativeButton("Start Simulation", DialogInterface.OnClickListener {
+                        dialog, which ->
+                    setFragmentResult("selectedFile", bundleOf("selectedFileBundle" to selectedFile.file.nameWithoutExtension, "simulate" to true))
+                    (activity as MainActivity).switchToCompanionMapFragment()
                 })
                 .setNeutralButton("Cancel", null)
                 .show()

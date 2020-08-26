@@ -7,4 +7,10 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="AppThemeNightMode" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/nightModeColorPrimary</item>
+        <item name="colorPrimaryDark">@color/nightModeColorDark</item>
+        <item name="colorAccent">@color/nightModeColorAccent</item>
+    </style>
+
 </resources>

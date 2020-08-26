@@ -11,7 +11,6 @@ import de.infoware.followmesdkexample.followme.FollowMeFileRepo
 import de.infoware.followmesdkexample.followme.data.FollowMeTour
 import de.infoware.followmesdkexample.sound.MaptripTTSListener
 import de.infoware.followmesdkexample.sound.MaptripTTSManager
-import java.io.File
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -30,15 +29,13 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     val secondsToCrossing = MutableLiveData<Double>()
     val progress = MutableLiveData<Double>()
 
-    init {
-        Log.e(TAG, "init")
-    }
+    val currentMuteOption = MutableLiveData<Boolean>()
 
     fun setMapViewer(mapviewer: Mapviewer) {
         this.mapviewer = mapviewer
     }
 
-    fun startFollowMeTour(filename:String, simulating: Boolean = true) {
+    fun startFollowMeTour(filename:String, simulating: Boolean = false) {
         if(filename != "") {
             ApiHelper.Instance().queueApiCall(Runnable {
                 FollowMeRoute.registerFollowMeRouteListener(this)
@@ -83,13 +80,20 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
 
             else -> return
         }
-        // activate chosen perspective
+
         mapviewer?.perspective = newPerspective
+    }
+
+    fun switchMuteOption() {
+        val isMute = MaptripTTSManager.Instance()?.isMute()
+        currentMuteOption.postValue(isMute!!.not())
+        MaptripTTSManager.Instance()?.setMute(isMute.not())
     }
 
     override fun taskFinished(task: BaseTask) {
         if(task.returnValue == ApiError.OK) {
             currentFollowMeRoute!!.start(isSimulation)
+            this.autozoomToCurrentPosition()
         }
     }
 
@@ -101,9 +105,9 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     }
 
     override fun followMeAction(p0: FmrActionType?, p1: String?): Boolean {
-        Log.e(TAG, "followMeAction")
-        Log.e(TAG, p0.toString())
-        Log.e(TAG, p1)
+        Log.d(TAG, "followMeAction")
+        Log.d(TAG, p0.toString())
+        Log.d(TAG, p1)
 
         if(p1 != null) {
             MaptripTTSManager.Instance()?.speak(p1, false)
@@ -112,9 +116,9 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     }
 
     override fun followMeEvent(p0: Int, p1: String?): Boolean {
-        Log.e(TAG, "followMeEvent")
-        Log.e(TAG, p0.toString())
-        Log.e(TAG, p1)
+        Log.d(TAG, "followMeEvent")
+        Log.d(TAG, p0.toString())
+        Log.d(TAG, p1)
 
         if(p1 != null) {
             MaptripTTSManager.Instance()?.speak(p1, false)
@@ -145,14 +149,14 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     override fun beforeAdviceStarts(speechIndependentSentence: String?, additionalAdviceInfo: String?, sentence: String?): Boolean {
 
         if(sentence != null) {
-            MaptripTTSManager.Instance()?.speak(sentence, true)
+            MaptripTTSManager.Instance()?.speak(sentence, false)
         }
 
         return true
     }
 
     override fun navigationStarted() {
-
+        Log.d(TAG, "navigationStarted")
     }
 
     override fun crossingInfoReceived(
@@ -170,7 +174,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     }
 
     override fun destinationReached(p0: Int) {
-
+        Log.d(TAG, "DestinationReached: ${p0}")
     }
 
     override fun speedLimitReceived(p0: Double) {
@@ -182,7 +186,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     }
 
     override fun ttsInitError(missingData: Boolean, notSupported: Boolean) {
-        Log.d(TAG, "ttsInit error: MissingData: ${missingData} - notSupportet: ${notSupported}")
+        Log.e(TAG, "ttsInit error: MissingData: ${missingData} - notSupportet: ${notSupported}")
     }
 
 

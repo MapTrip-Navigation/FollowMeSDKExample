@@ -65,8 +65,16 @@ class MapControlsFragment : Fragment() {
                 tvProgress.visibility = View.GONE
             } else {
                 tvProgress.visibility = View.VISIBLE
-            }  // progress.roundToInt()
+            }
             tvProgress.text = "Calculating Route... ${progress}"
+        }
+
+        val muteObserver = Observer<Boolean> { isMute ->
+            if(isMute) {
+                btnChangeMute.setBackgroundResource(R.drawable.button_mute)
+            } else {
+                btnChangeMute.setBackgroundResource(R.drawable.button_no_mute)
+            }
         }
 
         viewModel.currentStreetName.observe(this.viewLifecycleOwner, currentStreetObserver)
@@ -76,14 +84,21 @@ class MapControlsFragment : Fragment() {
 
         viewModel.progress.observe(this.viewLifecycleOwner, progressObserver)
 
+        viewModel.currentMuteOption.observe(this.viewLifecycleOwner, muteObserver)
+
         btnCenterMap.setOnClickListener {
                 v ->
             viewModel.autozoomToCurrentPosition()
         }
 
         btnChangePerspective.setOnClickListener {
-            v ->
+                v ->
             viewModel.switchPerspective()
+        }
+
+        btnChangeMute.setOnClickListener {
+                v ->
+            viewModel.switchMuteOption()
         }
     }
 

@@ -17,6 +17,7 @@ import de.infoware.android.api.Navigation
 import de.infoware.followmesdkexample.R
 import de.infoware.followmesdkexample.sound.MaptripTTSManager
 import kotlinx.android.synthetic.main.companion_map_fragment.*
+import kotlin.properties.Delegates
 
 class CompanionMapFragment : Fragment() {
 
@@ -28,6 +29,7 @@ class CompanionMapFragment : Fragment() {
 
     private lateinit var viewModel: CompanionMapViewModel
     private lateinit var selectedFileName: String
+    private var isSimulating: Boolean? = null
     private lateinit var mapView: IwMapView
     private lateinit var mapViewer: Mapviewer
 
@@ -38,6 +40,7 @@ class CompanionMapFragment : Fragment() {
 
         setFragmentResultListener("selectedFile") { key, bundle ->
             selectedFileName = if(bundle.getString("selectedFileBundle") != null) bundle.getString("selectedFileBundle")!! else ""
+            isSimulating = bundle.getBoolean("simulate")
             bundleObserver.postValue(selectedFileName)
         }
     }
@@ -60,15 +63,11 @@ class CompanionMapFragment : Fragment() {
         Navigation.registerNavigationListener(viewModel)
         MaptripTTSManager.Instance()?.setListener(viewModel)
         MaptripTTSManager.Instance()?.enableTTS(requireActivity().applicationContext)
-
-
-
     }
 
     private fun initListener() {
         val filenameBundleObserver = Observer<String> { filename ->
             Log.e(TAG, "filename gotten")
-            //viewModel.startFollowMeTour(filename)
         }
 
         this.bundleObserver.observe(this.viewLifecycleOwner, filenameBundleObserver)
@@ -77,7 +76,11 @@ class CompanionMapFragment : Fragment() {
             Log.e(TAG, "mapviewer ready")
             mapViewer = mapView.mapviewer
             viewModel.setMapViewer(mapViewer)
-            viewModel.startFollowMeTour(selectedFileName)
+            if(isSimulating != null) {
+                viewModel.startFollowMeTour(selectedFileName, isSimulating!!)
+            } else {
+                viewModel.startFollowMeTour(selectedFileName)
+            }
         }
     }
 
