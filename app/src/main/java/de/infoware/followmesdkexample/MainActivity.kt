@@ -1,10 +1,14 @@
 package de.infoware.followmesdkexample
 
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import de.infoware.android.api.*
@@ -16,7 +20,6 @@ import de.infoware.followmesdkexample.dialog.DialogFragment
 import de.infoware.followmesdkexample.filelist.FilelistFragment
 import de.infoware.followmesdkexample.mainmenu.MainMenuFragment
 import de.infoware.followmesdkexample.ui.main.MainFragment
-import java.io.File
 
 class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
 
@@ -24,7 +27,8 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
 
     private var alreadyInitalized = false
 
-    val isInitialized: MutableLiveData<Boolean> = MutableLiveData<Boolean>()
+    private val isInitialized = MutableLiveData<Boolean>()
+    private val permissionsGranted = MutableLiveData<Boolean>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,13 +45,43 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
 
         val viewModel: MainActivityViewModel by viewModels()
 
-        initListener()
-
-        this.initSDK()
+        this.initListener()
+        this.checkPermissions()
     }
 
     override fun onBackPressed() {
         //super.onBackPressed()
+    }
+
+    private fun checkPermissions() {
+        val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results: Map<String, Boolean> ->
+            var allPermissionsGranted = true
+            results.forEach{
+                if(!it.value) allPermissionsGranted = false
+            }
+
+            if (allPermissionsGranted) {
+                this.permissionsGranted.postValue(allPermissionsGranted)
+            }
+        }
+
+        when {
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED-> {
+
+                this.permissionsGranted.postValue(true)
+            }
+            else -> {
+                requestPermissionLauncher.launch(arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_PHONE_STATE)
+                )
+            }
+        }
     }
 
     private fun initListener() {
@@ -58,38 +92,19 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
         }
 
         this.isInitialized.observe(this, initObserver)
+
+        val permissionObserver = Observer<Boolean> { permissionGranted ->
+            if(permissionGranted) {
+                this.initSDK()
+            }
+        }
+
+        this.permissionsGranted.observe(this, permissionObserver)
     }
 
-    fun switchToFilelistFragment() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container, FilelistFragment.newInstance())
-            .commitNow()
-    }
+    private fun initSDK() {
 
-    fun switchToCompanionMapFragment() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container, CompanionMapFragment.newInstance())
-            .replace(R.id.mapControlContainer, MapControlsFragment.newInstance())
-            .commitNow()
-    }
-
-    fun switchToDialogFragment() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container, DialogFragment.newInstance())
-            .commitNow()
-    }
-
-    fun switchToMainMenuFragment() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container, MainMenuFragment.newInstance())
-            .commitNow()
-    }
-
-    fun initSDK() {
-
-        val compParams: ComputationSiteParameters
-
-        compParams = ComputationSiteParameters(
+        val compParams = ComputationSiteParameters(
             ComputationSite.ONBOARD,
             ComputationSite.ONBOARD, ComputationSite.ONBOARD, ComputationSite.ONBOARD,
             ComputationSite.NONE)
@@ -133,9 +148,34 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
                     horizontalAccuracy, gpstime.toString()
                 )
 
-            Log.d(TAG, "GPS-Callback: positionUpdate " + info)
+            Log.d(TAG, "GPS-Callback: positionUpdate $info")
 
         }
+    }
+
+    fun switchToFilelistFragment() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container, FilelistFragment.newInstance())
+            .commitNow()
+    }
+
+    fun switchToCompanionMapFragment() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container, CompanionMapFragment.newInstance())
+            .replace(R.id.mapControlContainer, MapControlsFragment.newInstance())
+            .commitNow()
+    }
+
+    fun switchToDialogFragment() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container, DialogFragment.newInstance())
+            .commitNow()
+    }
+
+    fun switchToMainMenuFragment() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container, MainMenuFragment.newInstance())
+            .commitNow()
     }
 
     override fun onApiInitialized() {

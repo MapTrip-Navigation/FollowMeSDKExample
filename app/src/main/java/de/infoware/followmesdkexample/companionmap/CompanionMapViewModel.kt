@@ -1,8 +1,6 @@
 package de.infoware.followmesdkexample.companionmap
 
-import android.content.Context
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import de.infoware.android.api.*
@@ -21,7 +19,6 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     private var currentFollowMeRoute: FollowMeRoute? = null
     private var selectedFile: FollowMeTour? = null
     private var isSimulation = false
-    private var mapviewer: Mapviewer? = null
 
     val currentStreetName = MutableLiveData<String>()
     val nextStreetName = MutableLiveData<String>()
@@ -30,9 +27,11 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     val progress = MutableLiveData<Double>()
 
     val currentMuteOption = MutableLiveData<Boolean>()
+    val currentPerspective = MutableLiveData<MapPerspective>()
+    val autozoomToPosition = MutableLiveData<Any>()
 
-    fun setMapViewer(mapviewer: Mapviewer) {
-        this.mapviewer = mapviewer
+    fun initPerspective(perspective: MapPerspective) {
+        this.currentPerspective.postValue(perspective)
     }
 
     fun startFollowMeTour(filename:String, simulating: Boolean = false) {
@@ -59,29 +58,29 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     }
 
     fun autozoomToCurrentPosition() {
-        mapviewer?.resumeLocationTracking()
+        this.autozoomToPosition.postValue(Any())
     }
 
     fun switchPerspective() {
-        val perspective = mapviewer?.perspective
-        var newPerspective: MapPerspective? = null
+        val perspective = this.currentPerspective.value
+        val newPerspective: MapPerspective?
 
-        Log.d(TAG, "Current perspective: " + perspective)
+        Log.d(TAG, "Current perspective: $perspective")
 
-        when (perspective) {
+        newPerspective = when (perspective) {
             MapPerspective.PERSPECTIVE_2D_DRIVING_DIRECTION ->
-                newPerspective = MapPerspective.PERSPECTIVE_2D_NORTHWARD
+                MapPerspective.PERSPECTIVE_2D_NORTHWARD
 
             MapPerspective.PERSPECTIVE_2D_NORTHWARD ->
-                newPerspective = MapPerspective.PERSPECTIVE_3D
+                MapPerspective.PERSPECTIVE_3D
 
             MapPerspective.PERSPECTIVE_3D ->
-                newPerspective = MapPerspective.PERSPECTIVE_2D_DRIVING_DIRECTION
+                MapPerspective.PERSPECTIVE_2D_DRIVING_DIRECTION
 
             else -> return
         }
 
-        mapviewer?.perspective = newPerspective
+        this.currentPerspective.postValue(newPerspective)
     }
 
     fun switchMuteOption() {
@@ -105,22 +104,20 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     }
 
     override fun followMeAction(p0: FmrActionType?, p1: String?): Boolean {
-        Log.d(TAG, "followMeAction")
-        Log.d(TAG, p0.toString())
-        Log.d(TAG, p1)
-
         if(p1 != null) {
+            Log.d(TAG, "followMeAction")
+            Log.d(TAG, p0.toString())
+            Log.d(TAG, p1)
             MaptripTTSManager.Instance()?.speak(p1, false)
         }
         return true
     }
 
     override fun followMeEvent(p0: Int, p1: String?): Boolean {
-        Log.d(TAG, "followMeEvent")
-        Log.d(TAG, p0.toString())
-        Log.d(TAG, p1)
-
         if(p1 != null) {
+            Log.d(TAG, "followMeEvent")
+            Log.d(TAG, p0.toString())
+            Log.d(TAG, p1)
             MaptripTTSManager.Instance()?.speak(p1, false)
         }
         return true
@@ -174,7 +171,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     }
 
     override fun destinationReached(p0: Int) {
-        Log.d(TAG, "DestinationReached: ${p0}")
+        Log.d(TAG, "DestinationReached: $p0")
     }
 
     override fun speedLimitReceived(p0: Double) {
@@ -186,7 +183,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     }
 
     override fun ttsInitError(missingData: Boolean, notSupported: Boolean) {
-        Log.e(TAG, "ttsInit error: MissingData: ${missingData} - notSupportet: ${notSupported}")
+        Log.e(TAG, "ttsInit error: MissingData: $missingData - notSupportet: $notSupported")
     }
 
 
