@@ -1,6 +1,5 @@
 package de.infoware.followmesdkexample.companionmap
 
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -14,10 +13,10 @@ import androidx.lifecycle.ViewModelProvider
 import de.infoware.android.api.IwMapView
 import de.infoware.android.api.Mapviewer
 import de.infoware.android.api.Navigation
+import de.infoware.android.api.enums.MapPerspective
 import de.infoware.followmesdkexample.R
 import de.infoware.followmesdkexample.sound.MaptripTTSManager
 import kotlinx.android.synthetic.main.companion_map_fragment.*
-import kotlin.properties.Delegates
 
 class CompanionMapFragment : Fragment() {
 
@@ -33,15 +32,12 @@ class CompanionMapFragment : Fragment() {
     private lateinit var mapView: IwMapView
     private lateinit var mapViewer: Mapviewer
 
-    private val bundleObserver: MutableLiveData<String> = MutableLiveData<String>()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setFragmentResultListener("selectedFile") { key, bundle ->
+        setFragmentResultListener("selectedFile") { _, bundle ->
             selectedFileName = if(bundle.getString("selectedFileBundle") != null) bundle.getString("selectedFileBundle")!! else ""
             isSimulating = bundle.getBoolean("simulate")
-            bundleObserver.postValue(selectedFileName)
         }
     }
 
@@ -66,16 +62,22 @@ class CompanionMapFragment : Fragment() {
     }
 
     private fun initListener() {
-        val filenameBundleObserver = Observer<String> { filename ->
-            Log.e(TAG, "filename gotten")
+        val perspectiveListener = Observer<MapPerspective> { newPerspective ->
+            mapViewer.perspective = newPerspective
         }
 
-        this.bundleObserver.observe(this.viewLifecycleOwner, filenameBundleObserver)
+        viewModel.currentPerspective.observe(this.viewLifecycleOwner, perspectiveListener)
+
+        val autoZoomObserver = Observer<Any> {
+            mapViewer.resumeLocationTracking()
+        }
+
+        viewModel.autozoomToPosition.observe(this.viewLifecycleOwner, autoZoomObserver)
 
         mapView.setOnMapviewerReadyListener {
-            Log.e(TAG, "mapviewer ready")
+            Log.d(TAG, "mapviewer ready")
             mapViewer = mapView.mapviewer
-            viewModel.setMapViewer(mapViewer)
+            viewModel.initPerspective(mapViewer.perspective)
             if(isSimulating != null) {
                 viewModel.startFollowMeTour(selectedFileName, isSimulating!!)
             } else {
