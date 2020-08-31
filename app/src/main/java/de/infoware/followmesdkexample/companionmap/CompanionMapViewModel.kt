@@ -23,8 +23,12 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     val currentStreetName = MutableLiveData<String>()
     val nextStreetName = MutableLiveData<String>()
     val metersToCrossing = MutableLiveData<Double>()
-    val secondsToCrossing = MutableLiveData<Double>()
+    val secondsToCrossing = MutableLiveData<Int>()
     val progress = MutableLiveData<Double>()
+    val pictoFileName = MutableLiveData<String>()
+
+    val metersToDestination = MutableLiveData<Int>()
+    val destinationReached = MutableLiveData<Int>()
 
     val currentMuteOption = MutableLiveData<Boolean>()
     val currentPerspective = MutableLiveData<MapPerspective>()
@@ -139,8 +143,9 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
 
     }
 
-    override fun destinationInfoReceived(p0: Double, p1: Double, p2: Double) {
-
+    override fun destinationInfoReceived(secondsToDestination: Double, metersToDestination: Double, energyToDestination: Double) {
+        val metersAsInt = BigDecimal(metersToDestination).setScale(0, RoundingMode.HALF_EVEN).toInt()
+        this.metersToDestination.postValue(metersAsInt)
     }
 
     override fun beforeAdviceStarts(speechIndependentSentence: String?, additionalAdviceInfo: String?, sentence: String?): Boolean {
@@ -153,7 +158,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     }
 
     override fun navigationStarted() {
-        Log.d(TAG, "navigationStarted")
+
     }
 
     override fun crossingInfoReceived(
@@ -164,13 +169,18 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
         metersToCrossing: Double,
         secondsToCrossing: Double
     ) {
+        val roundedMeters = BigDecimal(metersToCrossing).setScale(2, RoundingMode.HALF_EVEN).toDouble()
+        val roundedSeconds = secondsToCrossing.toInt()
+
+        this.pictoFileName.postValue(pictoFileName)
         this.nextStreetName.postValue(nextStreetName)
         this.currentStreetName.postValue(actualStreetName)
-        this.metersToCrossing.postValue(metersToCrossing)
-        this.secondsToCrossing.postValue(secondsToCrossing)
+        this.metersToCrossing.postValue(roundedMeters)
+        this.secondsToCrossing.postValue(roundedSeconds)
     }
 
     override fun destinationReached(p0: Int) {
+        this.destinationReached.postValue(p0)
         Log.d(TAG, "DestinationReached: $p0")
     }
 
