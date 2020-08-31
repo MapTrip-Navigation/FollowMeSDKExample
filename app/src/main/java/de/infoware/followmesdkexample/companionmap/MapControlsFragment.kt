@@ -22,6 +22,7 @@ class MapControlsFragment : Fragment() {
     }
 
     private lateinit var viewModel: CompanionMapViewModel
+    private var routeCalculated = false;
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,29 +45,43 @@ class MapControlsFragment : Fragment() {
 
     private fun initListener() {
 
+        val crossingPictoFile = Observer<String> { pictoFile ->
+            val drawableId = resources.getIdentifier(pictoFile.toLowerCase() + "_black", "drawable", context?.packageName)
+            ivPictogram.setImageResource(drawableId)
+        }
+
         val currentStreetObserver = Observer<String> { currentStreetName ->
-            tvCurrentStreet.text = currentStreetName
+            if(routeCalculated) tvProgress.text = currentStreetName
         }
 
         val nextStreetObserver = Observer<String> { nextStreetName ->
-
+            tvCurrentStreet.text = nextStreetName
         }
 
         val metersToCrossingObserver = Observer<Double> { metersToCrossing ->
-
+            tvMetersToCrossing.text = "$metersToCrossing m"
         }
 
-        val secondsToCrossingObserver = Observer<Double> { secondsToCrossing ->
+        val secondsToCrossingObserver = Observer<Int> { secondsToCrossing ->
+            tvSecondsToCrossing.text = "$secondsToCrossing s"
+        }
 
+        val metersToDestinationObserver = Observer<Int> { metersToDestination ->
+            tvMetersToDestination.text = "$metersToDestination" + "m"
+        }
+
+        val destinationReachedObserver = Observer<Int> { index ->
+            clNavigationInfo.visibility = View.GONE
+            tvProgress.visibility = View.GONE
         }
 
         val progressObserver = Observer<Double> { progress ->
             if(progress >= 100) {
-                tvProgress.visibility = View.GONE
+                clNavigationInfo.visibility = View.VISIBLE
+                routeCalculated = true
             } else {
-                tvProgress.visibility = View.VISIBLE
+                tvProgress.text = "Calculating Route... ${progress}"
             }
-            tvProgress.text = "Calculating Route... ${progress}"
         }
 
         val muteObserver = Observer<Boolean> { isMute ->
@@ -77,10 +92,15 @@ class MapControlsFragment : Fragment() {
             }
         }
 
+        viewModel.pictoFileName.observe(this.viewLifecycleOwner, crossingPictoFile)
+
         viewModel.currentStreetName.observe(this.viewLifecycleOwner, currentStreetObserver)
         viewModel.nextStreetName.observe(this.viewLifecycleOwner, nextStreetObserver)
         viewModel.metersToCrossing.observe(this.viewLifecycleOwner, metersToCrossingObserver)
         viewModel.secondsToCrossing.observe(this.viewLifecycleOwner, secondsToCrossingObserver)
+
+        viewModel.metersToDestination.observe(this.viewLifecycleOwner, metersToDestinationObserver)
+        viewModel.destinationReached.observe(this.viewLifecycleOwner, destinationReachedObserver)
 
         viewModel.progress.observe(this.viewLifecycleOwner, progressObserver)
 
