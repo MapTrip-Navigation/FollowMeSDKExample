@@ -12,18 +12,6 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <de.infoware.android.api.IwMapView
-            android:id="@+id/map_second"
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_gravity="center_horizontal"
-            app:perspective="perspective_2d_northward"
-            app:showVehicleIcon="true"
-            app:enableLocationTracking="true"
-            android:visibility="gone"
-            app:iwId="2"/>
-
 
         <de.infoware.android.api.IwMapView
             android:id="@+id/map"

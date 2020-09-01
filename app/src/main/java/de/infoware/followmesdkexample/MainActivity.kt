@@ -16,7 +16,6 @@ import de.infoware.android.api.enums.ApiError
 import de.infoware.android.api.enums.ComputationSite
 import de.infoware.followmesdkexample.companionmap.CompanionMapFragment
 import de.infoware.followmesdkexample.companionmap.MapControlsFragment
-import de.infoware.followmesdkexample.dialog.DialogFragment
 import de.infoware.followmesdkexample.filelist.FilelistFragment
 import de.infoware.followmesdkexample.mainmenu.MainMenuFragment
 import de.infoware.followmesdkexample.ui.main.MainFragment
@@ -24,8 +23,6 @@ import de.infoware.followmesdkexample.ui.main.MainFragment
 class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
 
     private val TAG = "FollowMeSDKExample"
-
-    private var alreadyInitalized = false
 
     private val isInitialized = MutableLiveData<Boolean>()
     private val permissionsGranted = MutableLiveData<Boolean>()
@@ -84,6 +81,7 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
         }
     }
 
+    // TODO COMMENT
     private fun initListener() {
         val initObserver = Observer<Boolean> { isInitialized ->
             if(isInitialized) {
@@ -102,6 +100,7 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
         this.permissionsGranted.observe(this, permissionObserver)
     }
 
+    // TODO COMMENT
     private fun initSDK() {
 
         val compParams = ComputationSiteParameters(
@@ -128,6 +127,8 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
             Log.e(TAG, "ApiHelper initialize failed. Error: $initErr")
         }
     }
+
+    // TODO COMMENT
 
     private fun startGPSProcessing() {
         Gps.useLogForSimulation("")
@@ -166,12 +167,6 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
             .commitNow()
     }
 
-    fun switchToDialogFragment() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container, DialogFragment.newInstance())
-            .commitNow()
-    }
-
     fun switchToMainMenuFragment() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.container, MainMenuFragment.newInstance())
@@ -179,32 +174,33 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
     }
 
     override fun onApiInitialized() {
-
         Log.d(TAG, "onApiInitialized")
         isInitialized.postValue(true)
-        alreadyInitalized = true
         registerGPSListener()
         startGPSProcessing()
     }
 
-    override fun onApiInitError(p0: ApiError?, p1: String?) {
-        Log.d(TAG, "onApiInitError")
-        Log.e(TAG, p0.toString())
+    override fun onApiInitError(err: ApiError?, description: String?) {
+        Log.e(TAG, "onApiInitError")
+        Log.e(TAG, err.toString() + " $description")
     }
 
     override fun onApiUninitialized() {
-        Log.e(TAG, "onApiUninitialized")
+        Log.d(TAG, "onApiUninitialized")
     }
 
-    override fun onApiLicenseError(p0: ApiError?) {
-        Log.e(TAG, p0.toString())
+    /**
+     * @param error
+     */
+    override fun onApiLicenseError(error: ApiError?) {
+        Log.e(TAG, error.toString())
     }
 
     override fun onApiLicenseWaiting() {
-        Log.e(TAG, "onApiLicenseWaiting")
+        Log.d(TAG, "onApiLicenseWaiting")
     }
 
     override fun onApiLicenseChanged() {
-        Log.e(TAG, "onApiLicenseWaiting")
+        Log.d(TAG, "onApiLicenseChanged")
     }
 }

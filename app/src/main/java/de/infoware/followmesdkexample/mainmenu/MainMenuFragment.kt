@@ -30,7 +30,6 @@ class MainMenuFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(requireActivity()).get(MainMenuViewModel::class.java)
-        // TODO: Use the ViewModel
 
         initListener()
     }

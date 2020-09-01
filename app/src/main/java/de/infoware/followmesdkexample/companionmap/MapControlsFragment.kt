@@ -9,9 +9,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import de.infoware.followmesdkexample.R
 import kotlinx.android.synthetic.main.map_controls_fragment.*
-import java.math.BigDecimal
-import java.math.RoundingMode
-import kotlin.math.roundToInt
 
 class MapControlsFragment : Fragment() {
 
@@ -22,7 +19,7 @@ class MapControlsFragment : Fragment() {
     }
 
     private lateinit var viewModel: CompanionMapViewModel
-    private var routeCalculated = false;
+    private var routeCalculated = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,10 +27,6 @@ class MapControlsFragment : Fragment() {
     ): View? {
 
         return inflater.inflate(R.layout.map_controls_fragment, container, false)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -70,7 +63,7 @@ class MapControlsFragment : Fragment() {
             tvMetersToDestination.text = "$metersToDestination" + "m"
         }
 
-        val destinationReachedObserver = Observer<Int> { index ->
+        val destinationReachedObserver = Observer<Int> { _ ->
             clNavigationInfo.visibility = View.GONE
             tvProgress.visibility = View.GONE
         }
@@ -80,7 +73,7 @@ class MapControlsFragment : Fragment() {
                 clNavigationInfo.visibility = View.VISIBLE
                 routeCalculated = true
             } else {
-                tvProgress.text = "Calculating Route... ${progress}"
+                tvProgress.text = "Calculating Route.. ${progress}"
             }
         }
 
@@ -108,7 +101,7 @@ class MapControlsFragment : Fragment() {
 
         btnCenterMap.setOnClickListener {
                 v ->
-            viewModel.autozoomToCurrentPosition()
+            viewModel.autoZoomToCurrentPosition()
         }
 
         btnChangePerspective.setOnClickListener {

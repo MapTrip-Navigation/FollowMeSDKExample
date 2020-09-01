@@ -2,9 +2,7 @@ package de.infoware.followmesdkexample.filelist
 
 import android.app.AlertDialog
 import android.content.DialogInterface
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -20,6 +18,9 @@ import de.infoware.followmesdkexample.filelist.adapter.FileListAdapter
 import de.infoware.followmesdkexample.followme.data.FollowMeTour
 import kotlinx.android.synthetic.main.filelist_fragment.*
 
+/**
+ *  
+ */
 class FilelistFragment : Fragment() {
 
     private val TAG = "FileListFragment"
@@ -27,7 +28,6 @@ class FilelistFragment : Fragment() {
     companion object {
         fun newInstance() = FilelistFragment()
     }
-
 
     private lateinit var adapter : FileListAdapter
     private lateinit var viewModel: FilelistViewModel
@@ -50,7 +50,7 @@ class FilelistFragment : Fragment() {
         initListener()
     }
 
-    fun initListener() {
+    private fun initListener() {
         val availableFollowMeFilesObserver = Observer<List<FollowMeTour>> { availableFollowMeFiles ->
             adapter.setList(availableFollowMeFiles)
         }
@@ -58,25 +58,42 @@ class FilelistFragment : Fragment() {
         viewModel.availableFollowMeFiles.observe(this.viewLifecycleOwner, availableFollowMeFilesObserver)
 
         val selectedFollowMeFileObserver = Observer<FollowMeTour> { selectedFile ->
-            AlertDialog.Builder(this.context)
-                .setTitle("Start Navigation?")
-                .setMessage("Do you want to start the navigation from File ${selectedFile.file.nameWithoutExtension}?")
-                .setPositiveButton("Start Guidence", DialogInterface.OnClickListener {
-                        dialog, which ->
-                    setFragmentResult("selectedFile", bundleOf("selectedFileBundle" to selectedFile.file.nameWithoutExtension, "simulate" to false))
-                    (activity as MainActivity).switchToCompanionMapFragment()
-
-                })
-                .setNegativeButton("Start Simulation", DialogInterface.OnClickListener {
-                        dialog, which ->
-                    setFragmentResult("selectedFile", bundleOf("selectedFileBundle" to selectedFile.file.nameWithoutExtension, "simulate" to true))
-                    (activity as MainActivity).switchToCompanionMapFragment()
-                })
-                .setNeutralButton("Cancel", null)
-                .show()
+            openStartNavigationDialog(selectedFile)
         }
 
         adapter.followMeTourObservable.observe(this.viewLifecycleOwner, selectedFollowMeFileObserver)
     }
+
+    private fun openStartNavigationDialog(selectedFile: FollowMeTour) {
+        AlertDialog.Builder(this.context)
+            .setTitle("Start Navigation?")
+            .setMessage("Do you want to start the navigation from File ${selectedFile.file.nameWithoutExtension}?")
+            .setPositiveButton("Start Guidence", DialogInterface.OnClickListener { dialog, which ->
+                setFragmentResult(
+                    "selectedFile",
+                    bundleOf(
+                        "selectedFileBundle" to selectedFile.file.nameWithoutExtension,
+                        "simulate" to false
+                    )
+                )
+                (activity as MainActivity).switchToCompanionMapFragment()
+
+            })
+            .setNegativeButton(
+                "Start Simulation",
+                DialogInterface.OnClickListener { dialog, which ->
+                    setFragmentResult(
+                        "selectedFile",
+                        bundleOf(
+                            "selectedFileBundle" to selectedFile.file.nameWithoutExtension,
+                            "simulate" to true
+                        )
+                    )
+                    (activity as MainActivity).switchToCompanionMapFragment()
+                })
+            .setNeutralButton("Cancel", null)
+            .show()
+    }
+
 
 }

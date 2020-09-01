@@ -35,7 +35,7 @@ object FollowMeFileRepo {
         val path = Environment.getExternalStorageDirectory().toString() + "/FollowMeSDKExample/user/routes"
         val directory = File(path)
         if(!directory.exists()) {
-            // TODO no directory found
+            // TODO no directory found - textview / Toast keine Touren?
             return followMeFiles
         }
         val files = directory.listFiles()
@@ -54,7 +54,7 @@ object FollowMeFileRepo {
         }
 
         if(followMeFiles.isEmpty()) {
-            // TODO no files found
+            // TODO no files found- textview / Toast keine Touren?
             return followMeFiles
         }
         loadedFiles = followMeFiles

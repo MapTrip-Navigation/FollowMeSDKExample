@@ -20,6 +20,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     private var selectedFile: FollowMeTour? = null
     private var isSimulation = false
 
+    // welches Fragment welcher Observer
     val currentStreetName = MutableLiveData<String>()
     val nextStreetName = MutableLiveData<String>()
     val metersToCrossing = MutableLiveData<Double>()
@@ -40,6 +41,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
 
     fun startFollowMeTour(filename:String, simulating: Boolean = false) {
         if(filename != "") {
+            // SDK Funktion
             ApiHelper.Instance().queueApiCall(Runnable {
                 FollowMeRoute.registerFollowMeRouteListener(this)
 
@@ -53,6 +55,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
                         return@Runnable
                     }
 
+                    // SDK Funktion
                     currentFollowMeRoute!!.registerTaskListener(this)
                     currentFollowMeRoute!!.calculate(true, false)
                     isSimulation = simulating
@@ -61,7 +64,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
         }
     }
 
-    fun autozoomToCurrentPosition() {
+    fun autoZoomToCurrentPosition() {
         this.autozoomToPosition.postValue(Any())
     }
 
@@ -93,10 +96,13 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
         MaptripTTSManager.Instance()?.setMute(isMute.not())
     }
 
+
+    // LISTENER FUNKTIONEN
+    // TODO VAR UMBENNEN
     override fun taskFinished(task: BaseTask) {
         if(task.returnValue == ApiError.OK) {
             currentFollowMeRoute!!.start(isSimulation)
-            this.autozoomToCurrentPosition()
+            this.autoZoomToCurrentPosition()
         }
     }
 
@@ -107,39 +113,39 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
         }
     }
 
-    override fun followMeAction(p0: FmrActionType?, p1: String?): Boolean {
-        if(p1 != null) {
+    override fun followMeAction(actionType: FmrActionType?, eventString: String?): Boolean {
+        if(eventString != null) {
             Log.d(TAG, "followMeAction")
-            Log.d(TAG, p0.toString())
-            Log.d(TAG, p1)
-            MaptripTTSManager.Instance()?.speak(p1, false)
+            Log.d(TAG, actionType.toString())
+            Log.d(TAG, eventString)
+            MaptripTTSManager.Instance()?.speak(eventString, false)
         }
         return true
     }
 
-    override fun followMeEvent(p0: Int, p1: String?): Boolean {
-        if(p1 != null) {
+    override fun followMeEvent(eventType: Int, eventString: String?): Boolean {
+        if(eventString != null) {
             Log.d(TAG, "followMeEvent")
-            Log.d(TAG, p0.toString())
-            Log.d(TAG, p1)
-            MaptripTTSManager.Instance()?.speak(p1, false)
+            Log.d(TAG, eventType.toString())
+            Log.d(TAG, eventString)
+            MaptripTTSManager.Instance()?.speak(eventString, false)
         }
         return true
     }
 
-    override fun vehicleWarningReceived(p0: VehicleWarningType?, p1: Double) {
+    override fun vehicleWarningReceived(restrictionType: VehicleWarningType?, restrictionValue: Double) {
 
     }
 
-    override fun routeUpdate(p0: RouteComparison?) {
+    override fun routeUpdate(routeComparison: RouteComparison?) {
 
     }
 
-    override fun rerouting(p0: Task<Void>?) {
+    override fun rerouting(task: Task<Void>?) {
 
     }
 
-    override fun laneInfoReceived(p0: String?, p1: String?, p2: String?) {
+    override fun laneInfoReceived(allArrows: String?, divider: String?, relevantArrows: String?) {
 
     }
 
@@ -179,12 +185,12 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
         this.secondsToCrossing.postValue(roundedSeconds)
     }
 
-    override fun destinationReached(p0: Int) {
-        this.destinationReached.postValue(p0)
-        Log.d(TAG, "DestinationReached: $p0")
+    override fun destinationReached(index: Int) {
+        this.destinationReached.postValue(index)
+        Log.d(TAG, "DestinationReached: $index")
     }
 
-    override fun speedLimitReceived(p0: Double) {
+    override fun speedLimitReceived(limit: Double) {
 
     }
 

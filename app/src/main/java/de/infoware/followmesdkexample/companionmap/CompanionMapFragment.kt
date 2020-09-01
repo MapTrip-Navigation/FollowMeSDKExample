@@ -1,13 +1,11 @@
 package de.infoware.followmesdkexample.companionmap
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.setFragmentResultListener
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import de.infoware.android.api.IwMapView
@@ -18,6 +16,11 @@ import de.infoware.followmesdkexample.R
 import de.infoware.followmesdkexample.sound.MaptripTTSManager
 import kotlinx.android.synthetic.main.companion_map_fragment.*
 
+/**
+ *  Fragment for the CompanionMap
+ *  includes the mapviewer and the map-element
+ *  Listens to changes about the map (perspective changes, setting the center, etc.)
+ */
 class CompanionMapFragment : Fragment() {
 
     private val TAG = "CompanionMapFragment"
@@ -35,6 +38,9 @@ class CompanionMapFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        /**
+         *  Getting the extra from the previous fragment (FileListFragment) and sets the selected file & options accordingly
+         */
         setFragmentResultListener("selectedFile") { _, bundle ->
             selectedFileName = if(bundle.getString("selectedFileBundle") != null) bundle.getString("selectedFileBundle")!! else ""
             isSimulating = bundle.getBoolean("simulate")
