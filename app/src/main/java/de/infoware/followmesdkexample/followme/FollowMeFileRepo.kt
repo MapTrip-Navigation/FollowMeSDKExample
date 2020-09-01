@@ -7,13 +7,24 @@ import de.infoware.followmesdkexample.followme.data.FollowMeTour
 import java.io.File
 import java.util.*
 
+/**
+ *  Singleton class to read all available files in the /user/routes/ directory
+ *
+ */
 object FollowMeFileRepo {
 
     private val TAG = "FollowMeFileRepo"
 
+    // LiveData for the laoded FollowMeTour files
     val routeFiles = MutableLiveData<List<FollowMeTour>>()
+    // List of FollowMeTour files
     var loadedFiles = mutableListOf<FollowMeTour>()
 
+    /**
+     *  Searches the loaded files for a given filename
+     *  @param filename Name of the file
+     *  @return FollowMeTour if the file was found, NULL if no file was found
+     */
     fun getFileByName(filename:String) : FollowMeTour? {
         loadedFiles.forEach { file ->
             if(file.file.nameWithoutExtension == filename) {
@@ -27,6 +38,10 @@ object FollowMeFileRepo {
         return loadedFiles;
     }
 
+    /**
+     *  Loads all available files in the /user/routes/ directory with up to one subdirectory
+     *  @return List<FollowMeTour> a list of all found FollowMeTour files. Returns empty list if no files were found
+     */
     fun loadAllFilesInRoute() : List<FollowMeTour> {
         val followMeFiles = mutableListOf<FollowMeTour>()
 
@@ -35,7 +50,6 @@ object FollowMeFileRepo {
         val path = Environment.getExternalStorageDirectory().toString() + "/FollowMeSDKExample/user/routes"
         val directory = File(path)
         if(!directory.exists()) {
-            // TODO no directory found - textview / Toast keine Touren?
             return followMeFiles
         }
         val files = directory.listFiles()
@@ -54,7 +68,6 @@ object FollowMeFileRepo {
         }
 
         if(followMeFiles.isEmpty()) {
-            // TODO no files found- textview / Toast keine Touren?
             return followMeFiles
         }
         loadedFiles = followMeFiles

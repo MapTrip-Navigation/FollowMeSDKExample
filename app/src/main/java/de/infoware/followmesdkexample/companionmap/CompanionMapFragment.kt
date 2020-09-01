@@ -21,7 +21,6 @@ import kotlinx.android.synthetic.main.companion_map_fragment.*
  *  includes the mapviewer and the map-element
  *  Listens to changes about the map (perspective changes, setting the center, etc.)
  */
-@Suppress("DEPRECATION")
 class CompanionMapFragment : Fragment() {
 
     //private val TAG = "CompanionMapFragment"
@@ -61,6 +60,8 @@ class CompanionMapFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
+        // the ViewModelProvider provides a new instance of the ViewModel if there is none, and uses the existing instance of the ViewModel if possible
         viewModel = ViewModelProvider(requireActivity()).get(CompanionMapViewModel::class.java)
 
         mapView = map

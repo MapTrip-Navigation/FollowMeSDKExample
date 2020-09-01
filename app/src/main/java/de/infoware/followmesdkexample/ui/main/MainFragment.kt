@@ -1,14 +1,15 @@
 package de.infoware.followmesdkexample.ui.main
 
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
 import de.infoware.followmesdkexample.R
 
+/**
+ *  MainFragment of the App - Currently only used for the SplashScreen
+ */
 class MainFragment : Fragment() {
 
     companion object {

@@ -1,6 +1,5 @@
 package de.infoware.followmesdkexample.mainmenu
 
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -9,9 +8,11 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import de.infoware.followmesdkexample.MainActivity
 import de.infoware.followmesdkexample.R
-import de.infoware.followmesdkexample.followme.FollowMeFileRepo
 import kotlinx.android.synthetic.main.main_menu_fragment.*
 
+/**
+ *  Fragment for the MainMenu (currently only "List" Button available)
+ */
 class MainMenuFragment : Fragment() {
 
     companion object {
@@ -29,6 +30,8 @@ class MainMenuFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
+        // the ViewModelProvider provides a new instance of the ViewModel if there is none, and uses the existing instance of the ViewModel if possible
         viewModel = ViewModelProvider(requireActivity()).get(MainMenuViewModel::class.java)
 
         initListener()

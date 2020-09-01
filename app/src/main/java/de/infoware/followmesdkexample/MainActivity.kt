@@ -16,15 +16,31 @@ import de.infoware.android.api.enums.ApiError
 import de.infoware.android.api.enums.ComputationSite
 import de.infoware.followmesdkexample.companionmap.CompanionMapFragment
 import de.infoware.followmesdkexample.companionmap.MapControlsFragment
-import de.infoware.followmesdkexample.filelist.FilelistFragment
+import de.infoware.followmesdkexample.filelist.FileListFragment
 import de.infoware.followmesdkexample.mainmenu.MainMenuFragment
 import de.infoware.followmesdkexample.ui.main.MainFragment
 
+/**
+ *
+ *
+ *  Please read the README file for the necessary folder structure and file paths
+ *
+ *
+ */
+
+/**
+ *  MainActivity for the FollowMeSDKExample
+ *  Handles the licencing and SDK init
+ *  Implements the licencing and SDK callbacks
+ */
 class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
 
     private val TAG = "FollowMeSDKExample"
 
+    // LiveData to wait for the SDK to be initialized
     private val isInitialized = MutableLiveData<Boolean>()
+
+    // LiveData to wait for all necessary permissions to be granted
     private val permissionsGranted = MutableLiveData<Boolean>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,10 +62,18 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
         this.checkPermissions()
     }
 
+    /**
+     *  Disabled the default back-button
+     */
     override fun onBackPressed() {
         //super.onBackPressed()
     }
 
+    /**
+     *  Method to check all Permissions, and requests them if needed
+     *  Uses the permissionsGranted LiveData to send either true or false to continue with the App
+     *  If one of the requested permissions is denied, the app will not continue
+     */
     private fun checkPermissions() {
         val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results: Map<String, Boolean> ->
             var allPermissionsGranted = true
@@ -81,7 +105,9 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
         }
     }
 
-    // TODO COMMENT
+    /**
+     *  Initialises the permission Observer and the SDK-init Observer
+     */
     private fun initListener() {
         val initObserver = Observer<Boolean> { isInitialized ->
             if(isInitialized) {
@@ -100,17 +126,31 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
         this.permissionsGranted.observe(this, permissionObserver)
     }
 
-    // TODO COMMENT
+    /**
+     *  Initialises the SDK and sets the necessary Paths
+     */
     private fun initSDK() {
 
+        /**
+         *  Sets the ComputationSites for
+         *      geocoding
+         *      navigation
+         *      map
+         *      pois
+         *      traffic
+         */
         val compParams = ComputationSiteParameters(
             ComputationSite.ONBOARD,
             ComputationSite.ONBOARD, ComputationSite.ONBOARD, ComputationSite.ONBOARD,
             ComputationSite.NONE)
 
+        /**
+         *  Sets the path to the App
+         */
         val appPath = Environment.getExternalStorageDirectory().toString() + "/FollowMeSDKExample"
         val dataPath = "${appPath}/data"
 
+        // registers Listener for License & SDK-init
         ApiHelper.Instance().addInitListener(this)
         ApiHelper.Instance().addLicenseListener(this)
         ApiHelper.Instance().initPaths(appPath, dataPath)
@@ -128,14 +168,19 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
         }
     }
 
-    // TODO COMMENT
-
+    /**
+     *  Needed to use GPS in your App
+     *  enableLocationUpdates() is needed to get any GPS updates for your App
+     */
     private fun startGPSProcessing() {
         Gps.useLogForSimulation("")
         ApiHelper.Instance().locationManager = IwLocationManagerGPS(this)
         ApiHelper.Instance().locationManager.enableLocationUpdates()
     }
 
+    /**
+     *  Listener to get updates of the current position of the device
+     */
     private fun registerGPSListener() {
         Log.d(TAG, "GPS Listener registered")
         Gps.registerGpsListener {
@@ -154,9 +199,12 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
         }
     }
 
+    /**
+     *  Methods to switch between the Fragments
+     */
     fun switchToFilelistFragment() {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.container, FilelistFragment.newInstance())
+            .replace(R.id.container, FileListFragment.newInstance())
             .commitNow()
     }
 
@@ -173,6 +221,13 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
             .commitNow()
     }
 
+    // Api Listener Callbacks
+
+    /**
+     *  Gets called when the Api is successfully initialized
+     *
+     *  After the Api is initialized, the GPS listener and processing can be enabled
+     */
     override fun onApiInitialized() {
         Log.d(TAG, "onApiInitialized")
         isInitialized.postValue(true)
@@ -180,26 +235,43 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
         startGPSProcessing()
     }
 
+    /**
+     *  Gets called when the Api could not be initialized
+     *  @param err ApiError
+     *  @param description a Description of the ApiError
+     */
     override fun onApiInitError(err: ApiError?, description: String?) {
         Log.e(TAG, "onApiInitError")
         Log.e(TAG, err.toString() + " $description")
     }
 
+    /**
+     *  Gets called when the Api was uninitialized
+     */
     override fun onApiUninitialized() {
         Log.d(TAG, "onApiUninitialized")
     }
 
+    // Licence Listener Callback
+
     /**
-     * @param error
+     *  Gets called when the Licence is is not found, or could not be used
+     *  @param error ApiError
      */
     override fun onApiLicenseError(error: ApiError?) {
         Log.e(TAG, error.toString())
     }
 
+    /**
+     *  Gets called periodically while the licence gets checked
+     */
     override fun onApiLicenseWaiting() {
         Log.d(TAG, "onApiLicenseWaiting")
     }
 
+    /**
+     *  Gets called when the Api notices a change in your licence
+     */
     override fun onApiLicenseChanged() {
         Log.d(TAG, "onApiLicenseChanged")
     }
