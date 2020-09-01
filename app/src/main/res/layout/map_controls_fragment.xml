@@ -36,6 +36,7 @@
             android:layout_marginBottom="10dp"
             android:padding="5dp"
             android:textColor="#000000"
+            android:fontFamily="@font/din_regular"
             android:textSize="18sp"
             app:layout_constraintBottom_toTopOf="@+id/glMetersSeconds"
             app:layout_constraintStart_toEndOf="@+id/ivPictogram"
@@ -43,6 +44,7 @@
 
         <TextView
             android:id="@+id/tvSecondsToCrossing"
+            android:fontFamily="@font/din_regular"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
@@ -78,6 +80,7 @@
             android:id="@+id/tvCurrentStreet"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/din_regular"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
             android:gravity="center_horizontal"
@@ -95,6 +98,7 @@
             android:id="@+id/tvMetersToDestination"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/din_regular"
             android:alpha="0.5"
             android:gravity="center_horizontal"
             android:padding="10dp"
@@ -129,6 +133,7 @@
         android:id="@+id/tvProgress"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/din_regular"
         android:background="#E6EAED"
         android:gravity="center_horizontal"
         android:padding="5dp"
@@ -160,6 +165,7 @@
         android:layout_marginLeft="10dp"
         android:layout_marginTop="10dp"
         android:text="P"
+        android:fontFamily="@font/din_bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvProgress" />
 

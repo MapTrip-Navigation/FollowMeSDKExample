@@ -75,7 +75,6 @@ class CompanionMapFragment : Fragment() {
         viewModel.autozoomToPosition.observe(this.viewLifecycleOwner, autoZoomObserver)
 
         mapView.setOnMapviewerReadyListener {
-            Log.d(TAG, "mapviewer ready")
             mapViewer = mapView.mapviewer
             viewModel.initPerspective(mapViewer.perspective)
             if(isSimulating != null) {
