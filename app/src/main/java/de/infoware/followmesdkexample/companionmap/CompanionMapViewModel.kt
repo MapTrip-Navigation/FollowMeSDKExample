@@ -11,10 +11,12 @@ import de.infoware.followmesdkexample.sound.MaptripTTSListener
 import de.infoware.followmesdkexample.sound.MaptripTTSManager
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.util.*
+import kotlin.concurrent.timer
 
 /**
  *  ViewModel for CompanionMapFragment and MapControlsFragment
- *  CompanionMapFragment and MapControlsFragment both use the same instance, so it can be used to pass information between them
+ *  CompanionMapFragment, MapControlsFragment and FollowMeControlsFragment all use the same instance, so it can be used to pass information between them
  *  Handles all logic related to the Map & MapViewer
  *  Handles all Listener-Events for Navigation, TTS, FollowMe, and Tasks (such as calculating a route)
  */
@@ -29,6 +31,9 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     private var selectedFile: FollowMeTour? = null
     // Simulation-Option for the FollowMeRoute
     private var isSimulation = false
+
+    // Timer for alternating the collection-state arrows
+    private lateinit var blinkTimer : Timer
 
     // LiveData for the Crossing-Information available via the crossingInfoReceived NavigationLister event
     val currentStreetName = MutableLiveData<String>()
@@ -51,6 +56,11 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     val currentPerspective = MutableLiveData<MapPerspective>()
     // LiveData for the 'Zoom to Vehicle'-Button. Gets called when the button (MapControlsFragment) is clicked and triggers the Observer in the CompanionMapFragment
     val autozoomToPosition = MutableLiveData<Any>()
+
+    // LiveData for the current collection state (left, right, both, none)
+    val currentCollectionState = MutableLiveData<FmrActionType>()
+    // LiveData for switching the collection-side images (making them 'blink')
+    val switchCollectionImage = MutableLiveData<Boolean>()
 
     /**
      *  Initialises the MapPerspective. Needed for calculating the next perspective on button-click
@@ -137,6 +147,27 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     }
 
     /**
+     *  Creates and starts the blink timer responsible for alternating the collection-state arrows
+     *  Sends a new value every seconds, which gets used in the FollowMeControlsFragment
+     */
+    private fun startBlinkTimer() {
+        var blink = false;
+        blinkTimer = timer("blink", true, 0.toLong(), 1000, action = {
+            switchCollectionImage.postValue(blink)
+            blink = !blink
+        })
+
+    }
+
+    /**
+     *  Stops the already created blink timer
+     *  Used when the destination is reached or the navigation is stopped
+     */
+    private fun stopBlinkTimer() {
+        blinkTimer.cancel()
+    }
+
+    /**
      *  Switches the MuteOption of MapTripTTS and send the result to the MapControlsFragment
      *  Gets called from the MapControlsFragment on Button-Click
      */
@@ -146,7 +177,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
         MaptripTTSManager.Instance()?.setMute(isMute.not())
     }
 
-    // TaskListener Callbacks
+    /* TaskListener Callbacks */
 
     /**
      *  Gets called when a task is finished (e.g. the Tour is finished calculating)
@@ -156,6 +187,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
         if(task.returnValue == ApiError.OK) {
             currentFollowMeRoute!!.start(isSimulation)
             this.autoZoomToCurrentPosition()
+            this.startBlinkTimer()
         }
     }
 
@@ -170,7 +202,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
         }
     }
 
-    // FollowMeRouteListener callbacks
+    /* FollowMeRouteListener callbacks */
 
     /**
      *  Gets called on FollowMeAction (e.g. 'collect left', 'transfer', etc)
@@ -179,9 +211,10 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
      */
     override fun followMeAction(actionType: FmrActionType?, eventString: String?): Boolean {
         if(eventString != null) {
-            Log.d(TAG, "followMeAction")
-            Log.d(TAG, actionType.toString())
-            Log.d(TAG, eventString)
+            Log.e(TAG, "followMeAction")
+            Log.e(TAG, actionType.toString())
+            Log.e(TAG, eventString)
+            this.currentCollectionState.postValue(actionType)
             MaptripTTSManager.Instance()?.speak(eventString, false)
         }
         return true
@@ -202,7 +235,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
         return true
     }
 
-    // NavigationListener callbacks
+    /* NavigationListener callbacks */
 
     /**
      *  Gets called on receiving a vehicle warning
@@ -309,6 +342,10 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     override fun destinationReached(index: Int) {
         // Posts new data so the MapControlFragment knows the Navigation has been finished
         this.destinationReached.postValue(index)
+
+        // Posts collect_unknown to hide the collection-arrows
+        this.currentCollectionState.postValue(FmrActionType.COLLECT_UNKNOWN)
+        this.stopBlinkTimer()
         Log.d(TAG, "DestinationReached: $index")
     }
 
@@ -320,7 +357,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
 
     }
 
-    // MapTripTTSListener callbacks
+    /* MapTripTTSListener callbacks */
 
     /**
      *  Gets called when the initialization was successful

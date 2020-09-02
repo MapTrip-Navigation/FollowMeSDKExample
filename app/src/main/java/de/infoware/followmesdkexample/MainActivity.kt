@@ -15,10 +15,13 @@ import de.infoware.android.api.*
 import de.infoware.android.api.enums.ApiError
 import de.infoware.android.api.enums.ComputationSite
 import de.infoware.followmesdkexample.companionmap.CompanionMapFragment
+import de.infoware.followmesdkexample.companionmap.FollowMeControlsFragment
 import de.infoware.followmesdkexample.companionmap.MapControlsFragment
 import de.infoware.followmesdkexample.filelist.FileListFragment
 import de.infoware.followmesdkexample.mainmenu.MainMenuFragment
 import de.infoware.followmesdkexample.ui.main.MainFragment
+import java.util.*
+import kotlin.concurrent.schedule
 
 /**
  *
@@ -212,6 +215,7 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
         supportFragmentManager.beginTransaction()
             .replace(R.id.container, CompanionMapFragment.newInstance())
             .replace(R.id.mapControlContainer, MapControlsFragment.newInstance())
+            .replace(R.id.followMeControlContainer, FollowMeControlsFragment.newInstance())
             .commitNow()
     }
 
@@ -221,7 +225,7 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
             .commitNow()
     }
 
-    // Api Listener Callbacks
+    /* Api Listener Callbacks */
 
     /**
      *  Gets called when the Api is successfully initialized
@@ -230,9 +234,15 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
      */
     override fun onApiInitialized() {
         Log.d(TAG, "onApiInitialized")
-        isInitialized.postValue(true)
         registerGPSListener()
         startGPSProcessing()
+
+        /**
+         *  Timeout after the Api is initialized, to keep the SplashScreen longer
+         */
+        Timer("SplashScreen", false).schedule(1000) {
+            isInitialized.postValue(true)
+        }
     }
 
     /**
@@ -252,7 +262,7 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
         Log.d(TAG, "onApiUninitialized")
     }
 
-    // Licence Listener Callback
+    /* Licence Listener Callback */
 
     /**
      *  Gets called when the Licence is is not found, or could not be used
