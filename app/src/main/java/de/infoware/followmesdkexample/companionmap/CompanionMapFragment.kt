@@ -23,10 +23,9 @@ import kotlinx.android.synthetic.main.companion_map_fragment.*
  */
 class CompanionMapFragment : Fragment() {
 
-    private val TAG = "CompanionMapFragment"
-
     companion object {
         fun newInstance() = CompanionMapFragment()
+        private const val TAG = "CompanionMapFragment"
     }
 
     // The ViewModel used for this Fragment
@@ -103,7 +102,7 @@ class CompanionMapFragment : Fragment() {
                 mapViewer.resumeLocationTracking()
             }
         }
-        viewModel.autozoomToPosition.observe(this.viewLifecycleOwner, autoZoomObserver)
+        viewModel.autoZoomToPosition.observe(this.viewLifecycleOwner, autoZoomObserver)
 
         /**
          *  Listener which gets called as soon as the MapViewer is ready to use

@@ -19,10 +19,9 @@ import java.util.*
  */
 class MapControlsFragment : Fragment() {
 
-    private val TAG = "MapControlsFragment"
-
     companion object {
         fun newInstance() = MapControlsFragment()
+        private const val TAG = "MapControlsFragment"
     }
 
     // the ViewModel used for this Fragment
@@ -86,7 +85,7 @@ class MapControlsFragment : Fragment() {
         }
         // Obsever for the destinationInfoReceived Callback: secondsToDestination
         val secondsToDestinationObserver = Observer<Int> { secondsToDestination ->
-            if(secondsToDestination >= 0) {}
+            //if(secondsToDestination >= 0)
         }
 
         // Observer for the destinationReached Callback: int currently not used (index of the reached destination, always 0 if there is only one)

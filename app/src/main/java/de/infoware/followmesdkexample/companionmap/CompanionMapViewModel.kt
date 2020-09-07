@@ -23,7 +23,9 @@ import kotlin.concurrent.timer
 class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListener,
     FollowMeRouteListener, TaskListener {
 
-    private val TAG = "CompanionMapViewModel"
+    companion object {
+        private const val TAG = "CompanionMapViewModel"
+    }
 
     // The currently running FollowMeRoute
     private var currentFollowMeRoute: FollowMeRoute? = null
@@ -60,7 +62,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     // LiveData for the MapPerspective. Gets called via a button in the MapControlsFragment and sends the next perspective to the CompanionMapFragment
     val currentPerspective = MutableLiveData<MapPerspective>()
     // LiveData for the 'Zoom to Vehicle'-Button. Gets called when the button (MapControlsFragment) is clicked and triggers the Observer in the CompanionMapFragment
-    val autozoomToPosition = MutableLiveData<Any>()
+    val autoZoomToPosition = MutableLiveData<Any>()
 
     // LiveData for the current collection state (left, right, both, none)
     val currentCollectionState = MutableLiveData<FmrActionType>()
@@ -120,7 +122,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
      *  Gets called from the MapControlsFragment on Button-Click
      */
     fun autoZoomToCurrentPosition() {
-        this.autozoomToPosition.postValue(Any())
+        this.autoZoomToPosition.postValue(Any())
     }
 
     /**
@@ -156,7 +158,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
      *  Sends a new value every seconds, which gets used in the FollowMeControlsFragment
      */
     private fun startBlinkTimer() {
-        var blink = false;
+        var blink = false
         blinkTimer = timer("blink", true, 0.toLong(), 1000, action = {
             switchCollectionImage.postValue(blink)
             blink = !blink
@@ -194,7 +196,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
             currentFollowMeRoute!!.start(isSimulation)
             // Boolean to prevent start of the same tour on orientation change
             this.navigationRunning = true
-            // LiveData to enable the Navigation-infos
+            // LiveData to enable the Navigation-info
             taskFinished.postValue(Any())
             // Zoom to current position
             this.autoZoomToCurrentPosition()
@@ -295,7 +297,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     /**
      *  Gets Called before a advice / direction indication is needed
      *  @param speechIndependentSentence language independent speech sentence
-     *  @param additionalAdviceInfo streetname / routenumber responses
+     *  @param additionalAdviceInfo street-name / route-number responses
      *  @param sentence speechIndependentSentence in target language including the additionalAdviceInfo
      */
     override fun beforeAdviceStarts(speechIndependentSentence: String?, additionalAdviceInfo: String?, sentence: String?): Boolean {
@@ -384,8 +386,6 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
      *  @param notSupported boolean if the TTS is not supported
      */
     override fun ttsInitError(missingData: Boolean, notSupported: Boolean) {
-        Log.e(TAG, "ttsInit error: MissingData: $missingData - notSupportet: $notSupported")
+        Log.e(TAG, "ttsInit error: MissingData: $missingData - notSupported: $notSupported")
     }
-
-
 }
