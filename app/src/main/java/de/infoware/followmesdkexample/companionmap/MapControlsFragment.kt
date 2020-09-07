@@ -29,6 +29,8 @@ class MapControlsFragment : Fragment() {
     private lateinit var viewModel: CompanionMapViewModel
     // boolean to check if the route is done calculating
     private var routeCalculated = false
+    // boolean to save if the route is already finished (for orientation-changes)
+    private var routeFinished = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -63,7 +65,7 @@ class MapControlsFragment : Fragment() {
         // Observer for the crossingInfoReceived Callback: actualStreetName
         // Sets the tvProgress TextView to the currentStreetName, if the route has finished calculating
         val currentStreetObserver = Observer<String> { currentStreetName ->
-            if(routeCalculated) tvProgress.text = currentStreetName
+            if(routeCalculated && !routeFinished) tvProgress.text = currentStreetName
         }
 
         // Observer for the crossingInfoReceived Callback: nextStreetName
@@ -88,20 +90,26 @@ class MapControlsFragment : Fragment() {
 
         // Observer for the destinationReached Callback: int currently not used (index of the reached destination, always 0 if there is only one)
         // Hides the Navigation-Information when the destination is reached
-        val destinationReachedObserver = Observer<Int> { _ ->
+        val destinationReachedObserver = Observer<Int> {
+            this.routeFinished = true
             clNavigationInfo.visibility = View.GONE
             tvProgress.visibility = View.GONE
         }
 
         // Observer for the taskProgress Callback
         // Shows the current progress of the task
-        val progressObserver = Observer<Double> { progress ->
+        val progressObserver = Observer<Int> { progress ->
             if(progress >= 100) {
-                clNavigationInfo.visibility = View.VISIBLE
                 routeCalculated = true
             } else {
-                tvProgress.text = "Calculating Route.. ${progress}"
+                tvProgress.text = "Calculating Route.. ${progress}%"
             }
+        }
+
+        // Observer for the task-state
+        // Sets the Navigation-Info to visible, after the route is calculated
+        val taskFinishedObserver = Observer<Any> {
+            if(!routeFinished) clNavigationInfo.visibility = View.VISIBLE
         }
 
         // Observer for the currentMuteOption
@@ -125,6 +133,7 @@ class MapControlsFragment : Fragment() {
         viewModel.destinationReached.observe(this.viewLifecycleOwner, destinationReachedObserver)
 
         viewModel.progress.observe(this.viewLifecycleOwner, progressObserver)
+        viewModel.taskFinished.observe(this.viewLifecycleOwner, taskFinishedObserver)
 
         viewModel.currentMuteOption.observe(this.viewLifecycleOwner, muteObserver)
 

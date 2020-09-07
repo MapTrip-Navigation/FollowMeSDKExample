@@ -44,8 +44,10 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     val secondsToCrossing = MutableLiveData<Int>()
     val pictoFileName = MutableLiveData<String>()
 
-    // LiveData for the progress of calculating the route
-    val progress = MutableLiveData<Double>()
+    // LiveData for the calculation of the route
+    val progress = MutableLiveData<Int>()
+    // LiveData for the state of the task (finished)
+    val taskFinished = MutableLiveData<Any>()
 
     // LiveData for the Destination-Information available via the destinationInfoReceived NavigationLister event
     val metersToDestination = MutableLiveData<Int>()
@@ -187,9 +189,15 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
      */
     override fun taskFinished(task: BaseTask) {
         if(task.returnValue == ApiError.OK) {
+            // Start the route
             currentFollowMeRoute!!.start(isSimulation)
+            // Boolean to prevent start of the same tour on orientation change
             this.navigationRunning = true
+            // LiveData to enable the Navigation-infos
+            taskFinished.postValue(Any())
+            // Zoom to current position
             this.autoZoomToCurrentPosition()
+            // Starts the followme-collect arrows
             this.startBlinkTimer()
         }
     }
@@ -200,7 +208,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
      */
     override fun taskProgress(task: BaseTask) {
         if(task.returnValue == ApiError.OK) {
-            val roundedProgress = BigDecimal(task.progress).setScale(2, RoundingMode.HALF_EVEN).toDouble()
+            val roundedProgress = BigDecimal(task.progress).setScale(0, RoundingMode.HALF_EVEN).toInt()
             this.progress.postValue(roundedProgress)
         }
     }
