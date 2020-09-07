@@ -67,25 +67,26 @@ class MapControlsFragment : Fragment() {
         val currentStreetObserver = Observer<String> { currentStreetName ->
             if(routeCalculated && !routeFinished) tvProgress.text = currentStreetName
         }
-
         // Observer for the crossingInfoReceived Callback: nextStreetName
         val nextStreetObserver = Observer<String> { nextStreetName ->
             tvNextStreet.text = nextStreetName
         }
-
         // Observer for the crossingInfoReceived Callback: metersToCrossing
         val metersToCrossingObserver = Observer<Int> { metersToCrossing ->
-            tvMetersToCrossing.text = "$metersToCrossing m"
+            if(metersToCrossing >= 0) tvMetersToCrossing.text = "$metersToCrossing m"
         }
-
         // Observer for the crossingInfoReceived Callback: secondsToCrossing
         val secondsToCrossingObserver = Observer<Int> { secondsToCrossing ->
-            tvSecondsToCrossing.text = "$secondsToCrossing s"
+            if(secondsToCrossing >= 0) tvSecondsToCrossing.text = "$secondsToCrossing s"
         }
 
         // Observer for the destinationInfoReceived Callback: metersToDestination
         val metersToDestinationObserver = Observer<Int> { metersToDestination ->
-            tvMetersToDestination.text = "$metersToDestination" + "m"
+            if(metersToDestination >= 0) tvMetersToDestination.text = "$metersToDestination" + "m"
+        }
+        // Obsever for the destinationInfoReceived Callback: secondsToDestination
+        val secondsToDestinationObserver = Observer<Int> { secondsToDestination ->
+            if(secondsToDestination >= 0) {}
         }
 
         // Observer for the destinationReached Callback: int currently not used (index of the reached destination, always 0 if there is only one)
@@ -130,6 +131,7 @@ class MapControlsFragment : Fragment() {
         viewModel.secondsToCrossing.observe(this.viewLifecycleOwner, secondsToCrossingObserver)
 
         viewModel.metersToDestination.observe(this.viewLifecycleOwner, metersToDestinationObserver)
+        viewModel.secondsToDestination.observe(this.viewLifecycleOwner, secondsToDestinationObserver)
         viewModel.destinationReached.observe(this.viewLifecycleOwner, destinationReachedObserver)
 
         viewModel.progress.observe(this.viewLifecycleOwner, progressObserver)

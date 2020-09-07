@@ -51,6 +51,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
 
     // LiveData for the Destination-Information available via the destinationInfoReceived NavigationLister event
     val metersToDestination = MutableLiveData<Int>()
+    val secondsToDestination = MutableLiveData<Int>()
     val destinationReached = MutableLiveData<Int>()
 
     // LiveData for the current Sound-Option, so that the MapControlsFragment can set the visual accordingly
@@ -286,6 +287,9 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     override fun destinationInfoReceived(secondsToDestination: Double, metersToDestination: Double, energyToDestination: Double) {
         val metersAsInt = BigDecimal(metersToDestination).setScale(0, RoundingMode.HALF_EVEN).toInt()
         this.metersToDestination.postValue(metersAsInt)
+
+        val secondsAsInt = BigDecimal(secondsToDestination).setScale(0, RoundingMode.HALF_EVEN).toInt()
+        this.secondsToDestination.postValue(secondsAsInt)
     }
 
     /**
