@@ -23,7 +23,7 @@ import kotlinx.android.synthetic.main.companion_map_fragment.*
  */
 class CompanionMapFragment : Fragment() {
 
-    //private val TAG = "CompanionMapFragment"
+    private val TAG = "CompanionMapFragment"
 
     companion object {
         fun newInstance() = CompanionMapFragment()
@@ -88,7 +88,9 @@ class CompanionMapFragment : Fragment() {
          *  When a new perspective is received, it gets set via the IwMapViewer
          */
         val perspectiveListener = Observer<MapPerspective> { newPerspective ->
-            mapViewer.perspective = newPerspective
+            if(this::mapViewer.isInitialized) {
+                mapViewer.perspective = newPerspective
+            }
         }
         viewModel.currentPerspective.observe(this.viewLifecycleOwner, perspectiveListener)
 
@@ -97,7 +99,9 @@ class CompanionMapFragment : Fragment() {
          *  Gets called anytime the Button is pressed and passed through the ViewModel
          */
         val autoZoomObserver = Observer<Any> {
-            mapViewer.resumeLocationTracking()
+            if(this::mapViewer.isInitialized) {
+                mapViewer.resumeLocationTracking()
+            }
         }
         viewModel.autozoomToPosition.observe(this.viewLifecycleOwner, autoZoomObserver)
 
@@ -107,10 +111,12 @@ class CompanionMapFragment : Fragment() {
         mapView.setOnMapviewerReadyListener {
             mapViewer = mapView.mapviewer
             viewModel.initPerspective(mapViewer.perspective)
-            if(isSimulating != null) {
-                viewModel.startFollowMeTour(selectedFileName, isSimulating!!)
-            } else {
-                viewModel.startFollowMeTour(selectedFileName)
+            if(!viewModel.navigationRunning && this::selectedFileName.isInitialized) {
+                if(isSimulating != null) {
+                    viewModel.startFollowMeTour(selectedFileName, isSimulating!!)
+                } else {
+                    viewModel.startFollowMeTour(selectedFileName)
+                }
             }
         }
     }

@@ -31,6 +31,8 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     private var selectedFile: FollowMeTour? = null
     // Simulation-Option for the FollowMeRoute
     private var isSimulation = false
+    // Boolean if there is a running navigation
+    var navigationRunning = false
 
     // Timer for alternating the collection-state arrows
     private lateinit var blinkTimer : Timer
@@ -38,7 +40,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     // LiveData for the Crossing-Information available via the crossingInfoReceived NavigationLister event
     val currentStreetName = MutableLiveData<String>()
     val nextStreetName = MutableLiveData<String>()
-    val metersToCrossing = MutableLiveData<Double>()
+    val metersToCrossing = MutableLiveData<Int>()
     val secondsToCrossing = MutableLiveData<Int>()
     val pictoFileName = MutableLiveData<String>()
 
@@ -186,6 +188,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     override fun taskFinished(task: BaseTask) {
         if(task.returnValue == ApiError.OK) {
             currentFollowMeRoute!!.start(isSimulation)
+            this.navigationRunning = true
             this.autoZoomToCurrentPosition()
             this.startBlinkTimer()
         }
@@ -211,9 +214,6 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
      */
     override fun followMeAction(actionType: FmrActionType?, eventString: String?): Boolean {
         if(eventString != null) {
-            Log.e(TAG, "followMeAction")
-            Log.e(TAG, actionType.toString())
-            Log.e(TAG, eventString)
             this.currentCollectionState.postValue(actionType)
             MaptripTTSManager.Instance()?.speak(eventString, false)
         }
@@ -227,9 +227,6 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
      */
     override fun followMeEvent(eventType: Int, eventString: String?): Boolean {
         if(eventString != null) {
-            Log.d(TAG, "followMeEvent")
-            Log.d(TAG, eventType.toString())
-            Log.d(TAG, eventString)
             MaptripTTSManager.Instance()?.speak(eventString, false)
         }
         return true
@@ -323,7 +320,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
         secondsToCrossing: Double
     ) {
         // Rounds the meters to 2 decimal places
-        val roundedMeters = BigDecimal(metersToCrossing).setScale(2, RoundingMode.HALF_EVEN).toDouble()
+        val roundedMeters = BigDecimal(metersToCrossing).setScale(0, RoundingMode.HALF_EVEN).toInt()
         // Cuts of the milliseconds of the secondsToCrossing
         val roundedSeconds = secondsToCrossing.toInt()
 
@@ -345,7 +342,10 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
 
         // Posts collect_unknown to hide the collection-arrows
         this.currentCollectionState.postValue(FmrActionType.COLLECT_UNKNOWN)
+        // Stops the blinking-arrows timer
         this.stopBlinkTimer()
+
+        this.navigationRunning = false
         Log.d(TAG, "DestinationReached: $index")
     }
 

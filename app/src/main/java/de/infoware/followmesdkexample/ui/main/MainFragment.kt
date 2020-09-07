@@ -1,5 +1,6 @@
 package de.infoware.followmesdkexample.ui.main
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater

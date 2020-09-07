@@ -72,7 +72,7 @@ class MapControlsFragment : Fragment() {
         }
 
         // Observer for the crossingInfoReceived Callback: metersToCrossing
-        val metersToCrossingObserver = Observer<Double> { metersToCrossing ->
+        val metersToCrossingObserver = Observer<Int> { metersToCrossing ->
             tvMetersToCrossing.text = "$metersToCrossing m"
         }
 

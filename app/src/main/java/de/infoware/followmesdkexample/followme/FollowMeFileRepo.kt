@@ -1,11 +1,9 @@
 package de.infoware.followmesdkexample.followme
 
 import android.os.Environment
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import de.infoware.followmesdkexample.followme.data.FollowMeTour
 import java.io.File
-import java.util.*
 
 /**
  *  Singleton class to read all available files in the /user/routes/ directory
@@ -15,10 +13,10 @@ object FollowMeFileRepo {
 
     private val TAG = "FollowMeFileRepo"
 
-    // LiveData for the laoded FollowMeTour files
-    val routeFiles = MutableLiveData<List<FollowMeTour>>()
+    // LiveData for the loaded FollowMeTour files
+    private val routeFiles = MutableLiveData<List<FollowMeTour>>()
     // List of FollowMeTour files
-    var loadedFiles = mutableListOf<FollowMeTour>()
+    private var loadedFiles = mutableListOf<FollowMeTour>()
 
     /**
      *  Searches the loaded files for a given filename
@@ -35,12 +33,12 @@ object FollowMeFileRepo {
     }
 
     fun getAllLoadedFiles():List<FollowMeTour> {
-        return loadedFiles;
+        return loadedFiles
     }
 
     /**
      *  Loads all available files in the /user/routes/ directory with up to one subdirectory
-     *  @return List<FollowMeTour> a list of all found FollowMeTour files. Returns empty list if no files were found
+     *  @return [List]<[FollowMeTour]> a list of all found FollowMeTour files. Returns empty list if no files were found
      */
     fun loadAllFilesInRoute() : List<FollowMeTour> {
         val followMeFiles = mutableListOf<FollowMeTour>()
