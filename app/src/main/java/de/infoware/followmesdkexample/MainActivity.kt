@@ -167,7 +167,7 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
          *  Sets the path to the App
          */
         val appPath = Environment.getExternalStorageDirectory().toString() + "/FollowMeSDKExample"
-        val dataPath = "${appPath}/data"
+        val dataPath = "${appPath}/mapdata"
 
         // registers Listener for License & SDK-init
         ApiHelper.Instance().addInitListener(this)
