@@ -36,7 +36,7 @@ class FileListAdapter(private var files : List<FollowMeTour>) : RecyclerView.Ada
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val file = files[position]
 
-        holder.itemView.tvFileName.text = file.file.nameWithoutExtension
+        holder.itemView.tvFileName.text = file.fileName
     }
 
     /**

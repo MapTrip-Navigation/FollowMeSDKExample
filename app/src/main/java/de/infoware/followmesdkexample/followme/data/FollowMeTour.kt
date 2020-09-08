@@ -6,4 +6,4 @@ import java.util.*
 /**
  *  Data class for FollowMeTour files
  */
-data class FollowMeTour(val fileName: String = "n/a", val filePath: String, val file: File)
+data class FollowMeTour(val fileName: String = "n/a", val extension: String, val filePath: String)

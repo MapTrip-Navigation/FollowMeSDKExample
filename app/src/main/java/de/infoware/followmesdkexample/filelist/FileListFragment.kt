@@ -97,12 +97,12 @@ class FileListFragment : Fragment() {
     private fun openStartNavigationDialog(selectedFile: FollowMeTour) {
         AlertDialog.Builder(this.context)
             .setTitle("Start Navigation?")
-            .setMessage("Do you want to start the navigation from File ${selectedFile.file.nameWithoutExtension}?")
+            .setMessage("Do you want to start the navigation from File ${selectedFile.fileName}?")
             .setPositiveButton("Start Guidence") { _, _ ->
                 setFragmentResult(
                     "selectedFile",
                     bundleOf(
-                        "selectedFileBundle" to selectedFile.file.nameWithoutExtension,
+                        "selectedFileBundle" to selectedFile.fileName,
                         "simulate" to false
                     )
                 )
@@ -113,7 +113,7 @@ class FileListFragment : Fragment() {
                 setFragmentResult(
                     "selectedFile",
                     bundleOf(
-                        "selectedFileBundle" to selectedFile.file.nameWithoutExtension,
+                        "selectedFileBundle" to selectedFile.fileName,
                         "simulate" to true
                     )
                 )

@@ -1,7 +1,6 @@
 package de.infoware.followmesdkexample.followme
 
 import android.os.Environment
-import androidx.lifecycle.MutableLiveData
 import de.infoware.followmesdkexample.followme.data.FollowMeTour
 import java.io.File
 
@@ -13,19 +12,17 @@ object FollowMeFileRepo {
 
     private val TAG = "FollowMeFileRepo"
 
-    // LiveData for the loaded FollowMeTour files
-    private val routeFiles = MutableLiveData<List<FollowMeTour>>()
     // List of FollowMeTour files
     private var loadedFiles = mutableListOf<FollowMeTour>()
 
     /**
      *  Searches the loaded files for a given filename
      *  @param filename Name of the file
-     *  @return FollowMeTour if the file was found, NULL if no file was found
+     *  @return [FollowMeTour] if the file was found, NULL if no file was found
      */
     fun getFileByName(filename:String) : FollowMeTour? {
         loadedFiles.forEach { file ->
-            if(file.file.nameWithoutExtension == filename) {
+            if(file.fileName == filename) {
                 return file
             }
         }
@@ -56,11 +53,17 @@ object FollowMeFileRepo {
             if(files[i].isDirectory) {
                 val subFiles = files[i].listFiles()
                 for(file in subFiles!!.indices) {
-                    tour = FollowMeTour(subFiles[i].name, subFiles[i].absolutePath, subFiles[i])
+                    if(subFiles[i].extension != "nmea" && subFiles[i].extension != "csv") {
+                        continue
+                    }
+                    tour = FollowMeTour(subFiles[i].nameWithoutExtension, subFiles[i].extension, subFiles[i].absolutePath)
                     followMeFiles.add(tour)
                 }
             } else {
-                tour = FollowMeTour(files[i].name, files[i].absolutePath, files[i])
+                if(files[i].extension != "nmea" && files[i].extension != "csv") {
+                    continue
+                }
+                tour = FollowMeTour(files[i].nameWithoutExtension, files[i].extension, files[i].absolutePath)
                 followMeFiles.add(tour)
             }
         }
@@ -69,7 +72,6 @@ object FollowMeFileRepo {
             return followMeFiles
         }
         loadedFiles = followMeFiles
-        routeFiles.postValue(followMeFiles)
         return followMeFiles
     }
 }
