@@ -19,16 +19,17 @@ import java.util.*
  */
 class MapControlsFragment : Fragment() {
 
-    private val TAG = "MapControlsFragment"
-
     companion object {
         fun newInstance() = MapControlsFragment()
+        private const val TAG = "MapControlsFragment"
     }
 
     // the ViewModel used for this Fragment
     private lateinit var viewModel: CompanionMapViewModel
     // boolean to check if the route is done calculating
     private var routeCalculated = false
+    // boolean to save if the route is already finished (for orientation-changes)
+    private var routeFinished = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -63,45 +64,52 @@ class MapControlsFragment : Fragment() {
         // Observer for the crossingInfoReceived Callback: actualStreetName
         // Sets the tvProgress TextView to the currentStreetName, if the route has finished calculating
         val currentStreetObserver = Observer<String> { currentStreetName ->
-            if(routeCalculated) tvProgress.text = currentStreetName
+            if(routeCalculated && !routeFinished) tvProgress.text = currentStreetName
         }
-
         // Observer for the crossingInfoReceived Callback: nextStreetName
         val nextStreetObserver = Observer<String> { nextStreetName ->
             tvNextStreet.text = nextStreetName
         }
-
         // Observer for the crossingInfoReceived Callback: metersToCrossing
-        val metersToCrossingObserver = Observer<Double> { metersToCrossing ->
-            tvMetersToCrossing.text = "$metersToCrossing m"
+        val metersToCrossingObserver = Observer<Int> { metersToCrossing ->
+            if(metersToCrossing >= 0) tvMetersToCrossing.text = "$metersToCrossing m"
         }
-
         // Observer for the crossingInfoReceived Callback: secondsToCrossing
         val secondsToCrossingObserver = Observer<Int> { secondsToCrossing ->
-            tvSecondsToCrossing.text = "$secondsToCrossing s"
+            if(secondsToCrossing >= 0) tvSecondsToCrossing.text = "$secondsToCrossing s"
         }
 
         // Observer for the destinationInfoReceived Callback: metersToDestination
         val metersToDestinationObserver = Observer<Int> { metersToDestination ->
-            tvMetersToDestination.text = "$metersToDestination" + "m"
+            if(metersToDestination >= 0) tvMetersToDestination.text = "$metersToDestination" + "m"
+        }
+        // Obsever for the destinationInfoReceived Callback: secondsToDestination
+        val secondsToDestinationObserver = Observer<Int> { secondsToDestination ->
+            //if(secondsToDestination >= 0)
         }
 
         // Observer for the destinationReached Callback: int currently not used (index of the reached destination, always 0 if there is only one)
         // Hides the Navigation-Information when the destination is reached
-        val destinationReachedObserver = Observer<Int> { _ ->
+        val destinationReachedObserver = Observer<Int> {
+            this.routeFinished = true
             clNavigationInfo.visibility = View.GONE
             tvProgress.visibility = View.GONE
         }
 
         // Observer for the taskProgress Callback
         // Shows the current progress of the task
-        val progressObserver = Observer<Double> { progress ->
+        val progressObserver = Observer<Int> { progress ->
             if(progress >= 100) {
-                clNavigationInfo.visibility = View.VISIBLE
                 routeCalculated = true
             } else {
-                tvProgress.text = "Calculating Route.. ${progress}"
+                tvProgress.text = "Calculating Route.. ${progress}%"
             }
+        }
+
+        // Observer for the task-state
+        // Sets the Navigation-Info to visible, after the route is calculated
+        val taskFinishedObserver = Observer<Any> {
+            if(!routeFinished) clNavigationInfo.visibility = View.VISIBLE
         }
 
         // Observer for the currentMuteOption
@@ -122,9 +130,11 @@ class MapControlsFragment : Fragment() {
         viewModel.secondsToCrossing.observe(this.viewLifecycleOwner, secondsToCrossingObserver)
 
         viewModel.metersToDestination.observe(this.viewLifecycleOwner, metersToDestinationObserver)
+        viewModel.secondsToDestination.observe(this.viewLifecycleOwner, secondsToDestinationObserver)
         viewModel.destinationReached.observe(this.viewLifecycleOwner, destinationReachedObserver)
 
         viewModel.progress.observe(this.viewLifecycleOwner, progressObserver)
+        viewModel.taskFinished.observe(this.viewLifecycleOwner, taskFinishedObserver)
 
         viewModel.currentMuteOption.observe(this.viewLifecycleOwner, muteObserver)
 

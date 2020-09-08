@@ -23,7 +23,9 @@ import kotlin.concurrent.timer
 class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListener,
     FollowMeRouteListener, TaskListener {
 
-    private val TAG = "CompanionMapViewModel"
+    companion object {
+        private const val TAG = "CompanionMapViewModel"
+    }
 
     // The currently running FollowMeRoute
     private var currentFollowMeRoute: FollowMeRoute? = null
@@ -31,6 +33,8 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     private var selectedFile: FollowMeTour? = null
     // Simulation-Option for the FollowMeRoute
     private var isSimulation = false
+    // Boolean if there is a running navigation
+    var navigationRunning = false
 
     // Timer for alternating the collection-state arrows
     private lateinit var blinkTimer : Timer
@@ -38,15 +42,18 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     // LiveData for the Crossing-Information available via the crossingInfoReceived NavigationLister event
     val currentStreetName = MutableLiveData<String>()
     val nextStreetName = MutableLiveData<String>()
-    val metersToCrossing = MutableLiveData<Double>()
+    val metersToCrossing = MutableLiveData<Int>()
     val secondsToCrossing = MutableLiveData<Int>()
     val pictoFileName = MutableLiveData<String>()
 
-    // LiveData for the progress of calculating the route
-    val progress = MutableLiveData<Double>()
+    // LiveData for the calculation of the route
+    val progress = MutableLiveData<Int>()
+    // LiveData for the state of the task (finished)
+    val taskFinished = MutableLiveData<Any>()
 
     // LiveData for the Destination-Information available via the destinationInfoReceived NavigationLister event
     val metersToDestination = MutableLiveData<Int>()
+    val secondsToDestination = MutableLiveData<Int>()
     val destinationReached = MutableLiveData<Int>()
 
     // LiveData for the current Sound-Option, so that the MapControlsFragment can set the visual accordingly
@@ -55,7 +62,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     // LiveData for the MapPerspective. Gets called via a button in the MapControlsFragment and sends the next perspective to the CompanionMapFragment
     val currentPerspective = MutableLiveData<MapPerspective>()
     // LiveData for the 'Zoom to Vehicle'-Button. Gets called when the button (MapControlsFragment) is clicked and triggers the Observer in the CompanionMapFragment
-    val autozoomToPosition = MutableLiveData<Any>()
+    val autoZoomToPosition = MutableLiveData<Any>()
 
     // LiveData for the current collection state (left, right, both, none)
     val currentCollectionState = MutableLiveData<FmrActionType>()
@@ -115,7 +122,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
      *  Gets called from the MapControlsFragment on Button-Click
      */
     fun autoZoomToCurrentPosition() {
-        this.autozoomToPosition.postValue(Any())
+        this.autoZoomToPosition.postValue(Any())
     }
 
     /**
@@ -151,7 +158,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
      *  Sends a new value every seconds, which gets used in the FollowMeControlsFragment
      */
     private fun startBlinkTimer() {
-        var blink = false;
+        var blink = false
         blinkTimer = timer("blink", true, 0.toLong(), 1000, action = {
             switchCollectionImage.postValue(blink)
             blink = !blink
@@ -185,8 +192,15 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
      */
     override fun taskFinished(task: BaseTask) {
         if(task.returnValue == ApiError.OK) {
+            // Start the route
             currentFollowMeRoute!!.start(isSimulation)
+            // Boolean to prevent start of the same tour on orientation change
+            this.navigationRunning = true
+            // LiveData to enable the Navigation-info
+            taskFinished.postValue(Any())
+            // Zoom to current position
             this.autoZoomToCurrentPosition()
+            // Starts the followme-collect arrows
             this.startBlinkTimer()
         }
     }
@@ -197,7 +211,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
      */
     override fun taskProgress(task: BaseTask) {
         if(task.returnValue == ApiError.OK) {
-            val roundedProgress = BigDecimal(task.progress).setScale(2, RoundingMode.HALF_EVEN).toDouble()
+            val roundedProgress = BigDecimal(task.progress).setScale(0, RoundingMode.HALF_EVEN).toInt()
             this.progress.postValue(roundedProgress)
         }
     }
@@ -211,9 +225,6 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
      */
     override fun followMeAction(actionType: FmrActionType?, eventString: String?): Boolean {
         if(eventString != null) {
-            Log.e(TAG, "followMeAction")
-            Log.e(TAG, actionType.toString())
-            Log.e(TAG, eventString)
             this.currentCollectionState.postValue(actionType)
             MaptripTTSManager.Instance()?.speak(eventString, false)
         }
@@ -227,9 +238,6 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
      */
     override fun followMeEvent(eventType: Int, eventString: String?): Boolean {
         if(eventString != null) {
-            Log.d(TAG, "followMeEvent")
-            Log.d(TAG, eventType.toString())
-            Log.d(TAG, eventString)
             MaptripTTSManager.Instance()?.speak(eventString, false)
         }
         return true
@@ -281,12 +289,15 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
     override fun destinationInfoReceived(secondsToDestination: Double, metersToDestination: Double, energyToDestination: Double) {
         val metersAsInt = BigDecimal(metersToDestination).setScale(0, RoundingMode.HALF_EVEN).toInt()
         this.metersToDestination.postValue(metersAsInt)
+
+        val secondsAsInt = BigDecimal(secondsToDestination).setScale(0, RoundingMode.HALF_EVEN).toInt()
+        this.secondsToDestination.postValue(secondsAsInt)
     }
 
     /**
      *  Gets Called before a advice / direction indication is needed
      *  @param speechIndependentSentence language independent speech sentence
-     *  @param additionalAdviceInfo streetname / routenumber responses
+     *  @param additionalAdviceInfo street-name / route-number responses
      *  @param sentence speechIndependentSentence in target language including the additionalAdviceInfo
      */
     override fun beforeAdviceStarts(speechIndependentSentence: String?, additionalAdviceInfo: String?, sentence: String?): Boolean {
@@ -323,7 +334,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
         secondsToCrossing: Double
     ) {
         // Rounds the meters to 2 decimal places
-        val roundedMeters = BigDecimal(metersToCrossing).setScale(2, RoundingMode.HALF_EVEN).toDouble()
+        val roundedMeters = BigDecimal(metersToCrossing).setScale(0, RoundingMode.HALF_EVEN).toInt()
         // Cuts of the milliseconds of the secondsToCrossing
         val roundedSeconds = secondsToCrossing.toInt()
 
@@ -345,7 +356,10 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
 
         // Posts collect_unknown to hide the collection-arrows
         this.currentCollectionState.postValue(FmrActionType.COLLECT_UNKNOWN)
+        // Stops the blinking-arrows timer
         this.stopBlinkTimer()
+
+        this.navigationRunning = false
         Log.d(TAG, "DestinationReached: $index")
     }
 
@@ -372,8 +386,6 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
      *  @param notSupported boolean if the TTS is not supported
      */
     override fun ttsInitError(missingData: Boolean, notSupported: Boolean) {
-        Log.e(TAG, "ttsInit error: MissingData: $missingData - notSupportet: $notSupported")
+        Log.e(TAG, "ttsInit error: MissingData: $missingData - notSupported: $notSupported")
     }
-
-
 }

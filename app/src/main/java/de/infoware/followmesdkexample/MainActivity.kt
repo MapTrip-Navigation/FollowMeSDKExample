@@ -20,8 +20,6 @@ import de.infoware.followmesdkexample.companionmap.MapControlsFragment
 import de.infoware.followmesdkexample.filelist.FileListFragment
 import de.infoware.followmesdkexample.mainmenu.MainMenuFragment
 import de.infoware.followmesdkexample.ui.main.MainFragment
-import java.util.*
-import kotlin.concurrent.schedule
 
 /**
  *
@@ -40,6 +38,8 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
 
     private val TAG = "FollowMeSDKExample"
 
+    private lateinit var viewModel: MainActivityViewModel
+
     // LiveData to wait for the SDK to be initialized
     private val isInitialized = MutableLiveData<Boolean>()
 
@@ -53,13 +53,16 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
 
         setContentView(R.layout.main_activity)
 
+        val viewModelByModels: MainActivityViewModel by viewModels()
+        viewModel = viewModelByModels
+
         if (savedInstanceState == null) {
+            viewModel.setCurrentFragment(MainActivityViewModel.Fragment.MainFragment)
             supportFragmentManager.beginTransaction()
                 .replace(R.id.container, MainFragment.newInstance())
                 .commitNow()
         }
 
-        val viewModel: MainActivityViewModel by viewModels()
 
         this.initListener()
         this.checkPermissions()
@@ -112,21 +115,34 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
      *  Initialises the permission Observer and the SDK-init Observer
      */
     private fun initListener() {
+        /**
+         *  Observer for the Initialisation
+         */
         val initObserver = Observer<Boolean> { isInitialized ->
             if(isInitialized) {
                 switchToMainMenuFragment()
             }
         }
-
         this.isInitialized.observe(this, initObserver)
 
+        /**
+         *  Observer for the required permissions
+         */
         val permissionObserver = Observer<Boolean> { permissionGranted ->
             if(permissionGranted) {
                 this.initSDK()
             }
         }
-
         this.permissionsGranted.observe(this, permissionObserver)
+
+        /**
+         *  Observer for the Timer, which gets triggered 1 second after the Api is initialized
+         */
+        val timerObserver = Observer<Any> {
+            this.isInitialized.postValue(true)
+        }
+        viewModel.timer.observe(this, timerObserver)
+
     }
 
     /**
@@ -206,23 +222,32 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
      *  Methods to switch between the Fragments
      */
     fun switchToFilelistFragment() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container, FileListFragment.newInstance())
-            .commitNow()
+        if(viewModel.getCurrentFragment() == MainActivityViewModel.Fragment.MainMenuFragment) {
+            viewModel.setCurrentFragment(MainActivityViewModel.Fragment.FileListFragment)
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container, FileListFragment.newInstance())
+                .commitNow()
+        }
     }
 
     fun switchToCompanionMapFragment() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container, CompanionMapFragment.newInstance())
-            .replace(R.id.mapControlContainer, MapControlsFragment.newInstance())
-            .replace(R.id.followMeControlContainer, FollowMeControlsFragment.newInstance())
-            .commitNow()
+        if(viewModel.getCurrentFragment() == MainActivityViewModel.Fragment.FileListFragment) {
+            viewModel.setCurrentFragment(MainActivityViewModel.Fragment.CompanionMapFragment)
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container, CompanionMapFragment.newInstance())
+                .replace(R.id.mapControlContainer, MapControlsFragment.newInstance())
+                .replace(R.id.followMeControlContainer, FollowMeControlsFragment.newInstance())
+                .commitNow()
+        }
     }
 
     fun switchToMainMenuFragment() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container, MainMenuFragment.newInstance())
-            .commitNow()
+        if(viewModel.getCurrentFragment() == MainActivityViewModel.Fragment.MainFragment) {
+            viewModel.setCurrentFragment(MainActivityViewModel.Fragment.MainMenuFragment)
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container, MainMenuFragment.newInstance())
+                .commitNow()
+        }
     }
 
     /* Api Listener Callbacks */
@@ -236,13 +261,11 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
         Log.d(TAG, "onApiInitialized")
         registerGPSListener()
         startGPSProcessing()
-
         /**
-         *  Timeout after the Api is initialized, to keep the SplashScreen longer
+         *  ViewModel sets a timeout after the API is initialized, to keep the SplashScreen up longer
+         *  Set in the ViewModel to prevent the timer to be deleted on orientation-change
          */
-        Timer("SplashScreen", false).schedule(1000) {
-            isInitialized.postValue(true)
-        }
+        viewModel.initSplashScreenTimer()
     }
 
     /**
