@@ -26,6 +26,7 @@
             android:orientation="horizontal"
             app:layout_constraintGuide_percent="0.5" />
 
+
         <View
             android:layout_width="0dp"
             android:layout_height="1dp"
@@ -136,14 +137,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_end="100dp" />
+        app:layout_constraintGuide_end="75dp" />
 
     <TextView
         android:id="@+id/tvProgress"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/din_regular"
         android:background="#E6EAED"
+        android:fontFamily="@font/din_regular"
         android:gravity="center_horizontal"
         android:padding="5dp"
         android:textAlignment="center"
@@ -173,8 +174,8 @@
         android:layout_marginStart="10dp"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="10dp"
-        android:text="P"
         android:fontFamily="@font/din_bold"
+        android:text="P"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvProgress" />
 
@@ -186,8 +187,8 @@
         android:layout_marginRight="10dp"
         android:layout_marginBottom="10dp"
         android:background="@drawable/button_no_mute"
-        app:layout_constraintBottom_toTopOf="@+id/btnCenterMap"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintBottom_toTopOf="@+id/clNavigationInfo"
+        app:layout_constraintEnd_toStartOf="@+id/btnCenterMap" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

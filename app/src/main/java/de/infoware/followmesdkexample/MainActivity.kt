@@ -15,19 +15,35 @@ import de.infoware.android.api.*
 import de.infoware.android.api.enums.ApiError
 import de.infoware.android.api.enums.ComputationSite
 import de.infoware.followmesdkexample.companionmap.CompanionMapFragment
+import de.infoware.followmesdkexample.companionmap.FollowMeControlsFragment
 import de.infoware.followmesdkexample.companionmap.MapControlsFragment
-import de.infoware.followmesdkexample.dialog.DialogFragment
-import de.infoware.followmesdkexample.filelist.FilelistFragment
+import de.infoware.followmesdkexample.filelist.FileListFragment
 import de.infoware.followmesdkexample.mainmenu.MainMenuFragment
 import de.infoware.followmesdkexample.ui.main.MainFragment
 
+/**
+ *
+ *
+ *  Please read the README file for the necessary folder structure and file paths
+ *
+ *
+ */
+
+/**
+ *  MainActivity for the FollowMeSDKExample
+ *  Handles the licencing and SDK init
+ *  Implements the licencing and SDK callbacks
+ */
 class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
 
     private val TAG = "FollowMeSDKExample"
 
-    private var alreadyInitalized = false
+    private lateinit var viewModel: MainActivityViewModel
 
+    // LiveData to wait for the SDK to be initialized
     private val isInitialized = MutableLiveData<Boolean>()
+
+    // LiveData to wait for all necessary permissions to be granted
     private val permissionsGranted = MutableLiveData<Boolean>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,22 +53,33 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
 
         setContentView(R.layout.main_activity)
 
+        val viewModelByModels: MainActivityViewModel by viewModels()
+        viewModel = viewModelByModels
+
         if (savedInstanceState == null) {
+            viewModel.setCurrentFragment(MainActivityViewModel.Fragment.MainFragment)
             supportFragmentManager.beginTransaction()
                 .replace(R.id.container, MainFragment.newInstance())
                 .commitNow()
         }
 
-        val viewModel: MainActivityViewModel by viewModels()
 
         this.initListener()
         this.checkPermissions()
     }
 
+    /**
+     *  Disabled the default back-button
+     */
     override fun onBackPressed() {
         //super.onBackPressed()
     }
 
+    /**
+     *  Method to check all Permissions, and requests them if needed
+     *  Uses the permissionsGranted LiveData to send either true or false to continue with the App
+     *  If one of the requested permissions is denied, the app will not continue
+     */
     private fun checkPermissions() {
         val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results: Map<String, Boolean> ->
             var allPermissionsGranted = true
@@ -84,34 +111,65 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
         }
     }
 
+    /**
+     *  Initialises the permission Observer and the SDK-init Observer
+     */
     private fun initListener() {
+        /**
+         *  Observer for the Initialisation
+         */
         val initObserver = Observer<Boolean> { isInitialized ->
             if(isInitialized) {
                 switchToMainMenuFragment()
             }
         }
-
         this.isInitialized.observe(this, initObserver)
 
+        /**
+         *  Observer for the required permissions
+         */
         val permissionObserver = Observer<Boolean> { permissionGranted ->
             if(permissionGranted) {
                 this.initSDK()
             }
         }
-
         this.permissionsGranted.observe(this, permissionObserver)
+
+        /**
+         *  Observer for the Timer, which gets triggered 1 second after the Api is initialized
+         */
+        val timerObserver = Observer<Any> {
+            this.isInitialized.postValue(true)
+        }
+        viewModel.timer.observe(this, timerObserver)
+
     }
 
+    /**
+     *  Initialises the SDK and sets the necessary Paths
+     */
     private fun initSDK() {
 
+        /**
+         *  Sets the ComputationSites for
+         *      geocoding
+         *      navigation
+         *      map
+         *      pois
+         *      traffic
+         */
         val compParams = ComputationSiteParameters(
             ComputationSite.ONBOARD,
             ComputationSite.ONBOARD, ComputationSite.ONBOARD, ComputationSite.ONBOARD,
             ComputationSite.NONE)
 
+        /**
+         *  Sets the path to the App
+         */
         val appPath = Environment.getExternalStorageDirectory().toString() + "/FollowMeSDKExample"
-        val dataPath = "${appPath}/data"
+        val dataPath = "${appPath}/mapdata"
 
+        // registers Listener for License & SDK-init
         ApiHelper.Instance().addInitListener(this)
         ApiHelper.Instance().addLicenseListener(this)
         ApiHelper.Instance().initPaths(appPath, dataPath)
@@ -129,12 +187,19 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
         }
     }
 
+    /**
+     *  Needed to use GPS in your App
+     *  enableLocationUpdates() is needed to get any GPS updates for your App
+     */
     private fun startGPSProcessing() {
         Gps.useLogForSimulation("")
         ApiHelper.Instance().locationManager = IwLocationManagerGPS(this)
         ApiHelper.Instance().locationManager.enableLocationUpdates()
     }
 
+    /**
+     *  Listener to get updates of the current position of the device
+     */
     private fun registerGPSListener() {
         Log.d(TAG, "GPS Listener registered")
         Gps.registerGpsListener {
@@ -153,58 +218,94 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
         }
     }
 
+    /**
+     *  Methods to switch between the Fragments
+     */
     fun switchToFilelistFragment() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container, FilelistFragment.newInstance())
-            .commitNow()
+        if(viewModel.getCurrentFragment() == MainActivityViewModel.Fragment.MainMenuFragment) {
+            viewModel.setCurrentFragment(MainActivityViewModel.Fragment.FileListFragment)
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container, FileListFragment.newInstance())
+                .commitNow()
+        }
     }
 
     fun switchToCompanionMapFragment() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container, CompanionMapFragment.newInstance())
-            .replace(R.id.mapControlContainer, MapControlsFragment.newInstance())
-            .commitNow()
-    }
-
-    fun switchToDialogFragment() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container, DialogFragment.newInstance())
-            .commitNow()
+        if(viewModel.getCurrentFragment() == MainActivityViewModel.Fragment.FileListFragment) {
+            viewModel.setCurrentFragment(MainActivityViewModel.Fragment.CompanionMapFragment)
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container, CompanionMapFragment.newInstance())
+                .replace(R.id.mapControlContainer, MapControlsFragment.newInstance())
+                .replace(R.id.followMeControlContainer, FollowMeControlsFragment.newInstance())
+                .commitNow()
+        }
     }
 
     fun switchToMainMenuFragment() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container, MainMenuFragment.newInstance())
-            .commitNow()
+        if(viewModel.getCurrentFragment() == MainActivityViewModel.Fragment.MainFragment) {
+            viewModel.setCurrentFragment(MainActivityViewModel.Fragment.MainMenuFragment)
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container, MainMenuFragment.newInstance())
+                .commitNow()
+        }
     }
 
-    override fun onApiInitialized() {
+    /* Api Listener Callbacks */
 
+    /**
+     *  Gets called when the Api is successfully initialized
+     *
+     *  After the Api is initialized, the GPS listener and processing can be enabled
+     */
+    override fun onApiInitialized() {
         Log.d(TAG, "onApiInitialized")
-        isInitialized.postValue(true)
-        alreadyInitalized = true
         registerGPSListener()
         startGPSProcessing()
+        /**
+         *  ViewModel sets a timeout after the API is initialized, to keep the SplashScreen up longer
+         *  Set in the ViewModel to prevent the timer to be deleted on orientation-change
+         */
+        viewModel.initSplashScreenTimer()
     }
 
-    override fun onApiInitError(p0: ApiError?, p1: String?) {
-        Log.d(TAG, "onApiInitError")
-        Log.e(TAG, p0.toString())
+    /**
+     *  Gets called when the Api could not be initialized
+     *  @param err ApiError
+     *  @param description a Description of the ApiError
+     */
+    override fun onApiInitError(err: ApiError?, description: String?) {
+        Log.e(TAG, "onApiInitError")
+        Log.e(TAG, err.toString() + " $description")
     }
 
+    /**
+     *  Gets called when the Api was uninitialized
+     */
     override fun onApiUninitialized() {
-        Log.e(TAG, "onApiUninitialized")
+        Log.d(TAG, "onApiUninitialized")
     }
 
-    override fun onApiLicenseError(p0: ApiError?) {
-        Log.e(TAG, p0.toString())
+    /* Licence Listener Callback */
+
+    /**
+     *  Gets called when the Licence is is not found, or could not be used
+     *  @param error ApiError
+     */
+    override fun onApiLicenseError(error: ApiError?) {
+        Log.e(TAG, error.toString())
     }
 
+    /**
+     *  Gets called periodically while the licence gets checked
+     */
     override fun onApiLicenseWaiting() {
-        Log.e(TAG, "onApiLicenseWaiting")
+        Log.d(TAG, "onApiLicenseWaiting")
     }
 
+    /**
+     *  Gets called when the Api notices a change in your licence
+     */
     override fun onApiLicenseChanged() {
-        Log.e(TAG, "onApiLicenseWaiting")
+        Log.d(TAG, "onApiLicenseChanged")
     }
 }

@@ -1,22 +1,28 @@
 package de.infoware.followmesdkexample.followme
 
 import android.os.Environment
-import android.util.Log
-import androidx.lifecycle.MutableLiveData
 import de.infoware.followmesdkexample.followme.data.FollowMeTour
 import java.io.File
-import java.util.*
 
+/**
+ *  Singleton class to read all available files in the /user/routes/ directory
+ *
+ */
 object FollowMeFileRepo {
 
     private val TAG = "FollowMeFileRepo"
 
-    val routeFiles = MutableLiveData<List<FollowMeTour>>()
-    var loadedFiles = mutableListOf<FollowMeTour>()
+    // List of FollowMeTour files
+    private var loadedFiles = mutableListOf<FollowMeTour>()
 
+    /**
+     *  Searches the loaded files for a given filename
+     *  @param filename Name of the file
+     *  @return [FollowMeTour] if the file was found, NULL if no file was found
+     */
     fun getFileByName(filename:String) : FollowMeTour? {
         loadedFiles.forEach { file ->
-            if(file.file.nameWithoutExtension == filename) {
+            if(file.fileName == filename) {
                 return file
             }
         }
@@ -24,9 +30,13 @@ object FollowMeFileRepo {
     }
 
     fun getAllLoadedFiles():List<FollowMeTour> {
-        return loadedFiles;
+        return loadedFiles
     }
 
+    /**
+     *  Loads all available files in the /user/routes/ directory with up to one subdirectory
+     *  @return [List]<[FollowMeTour]> a list of all found FollowMeTour files. Returns empty list if no files were found
+     */
     fun loadAllFilesInRoute() : List<FollowMeTour> {
         val followMeFiles = mutableListOf<FollowMeTour>()
 
@@ -35,7 +45,6 @@ object FollowMeFileRepo {
         val path = Environment.getExternalStorageDirectory().toString() + "/FollowMeSDKExample/user/routes"
         val directory = File(path)
         if(!directory.exists()) {
-            // TODO no directory found
             return followMeFiles
         }
         val files = directory.listFiles()
@@ -44,21 +53,25 @@ object FollowMeFileRepo {
             if(files[i].isDirectory) {
                 val subFiles = files[i].listFiles()
                 for(file in subFiles!!.indices) {
-                    tour = FollowMeTour(subFiles[i].name, subFiles[i].absolutePath, subFiles[i])
+                    if(subFiles[i].extension != "nmea" && subFiles[i].extension != "csv") {
+                        continue
+                    }
+                    tour = FollowMeTour(subFiles[i].nameWithoutExtension, subFiles[i].extension, subFiles[i].absolutePath)
                     followMeFiles.add(tour)
                 }
             } else {
-                tour = FollowMeTour(files[i].name, files[i].absolutePath, files[i])
+                if(files[i].extension != "nmea" && files[i].extension != "csv") {
+                    continue
+                }
+                tour = FollowMeTour(files[i].nameWithoutExtension, files[i].extension, files[i].absolutePath)
                 followMeFiles.add(tour)
             }
         }
 
         if(followMeFiles.isEmpty()) {
-            // TODO no files found
             return followMeFiles
         }
         loadedFiles = followMeFiles
-        routeFiles.postValue(followMeFiles)
         return followMeFiles
     }
 }
