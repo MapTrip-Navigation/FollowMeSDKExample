@@ -6,9 +6,10 @@ It consists of an Android Studio Project with commented code, in which you can s
 ## Setup
 
 To use this App, you have to make a few preparations first.
-Contact the ![infoware support](https://www.infoware.de/kontakt/) to get the resource package for the FollowMeSDKExample App and a demo-licence.
+Contact the [infoware support](https://www.infoware.de/kontakt/) to get the resource package for the FollowMeSDKExample App and a demo-licence.
 
 In our SDK package a "FollowMeSDKExample" folder is included.
+
 ![](readme_res/root_folder.png)
 
 Inside this folder, you will find the following structure:
