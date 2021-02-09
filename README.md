@@ -6,7 +6,7 @@ It consists of an Android Studio Project with commented code, in which you can s
 ## Setup
 
 To use this App, you have to make a few preparations first.
-Contact the [infoware support](https://www.infoware.de/kontakt/) to get the resource package for the FollowMeSDKExample App and a demo-licence.
+Contact the [infoware support](https://www.maptrip.de/kontakt/) to get the resource package for the FollowMeSDKExample App and a demo-licence.
 
 In our SDK package a "FollowMeSDKExample" folder is included. This folder needs to be present on the root-directory of your device. Simply copy it over after you added the licence.
 
