@@ -1,6 +1,7 @@
 package de.infoware.followmesdkexample.followme
 
 import android.os.Environment
+import de.infoware.android.api.ApiHelper
 import de.infoware.followmesdkexample.followme.data.FollowMeTour
 import java.io.File
 
@@ -42,7 +43,7 @@ object FollowMeFileRepo {
 
         var tour: FollowMeTour
 
-        val path = Environment.getExternalStorageDirectory().toString() + "/FollowMeSDKExample/user/routes"
+        val path = "${ApiHelper.Instance().userDataPath}/followMeRoutes/Local"
         val directory = File(path)
         if(!directory.exists()) {
             return followMeFiles

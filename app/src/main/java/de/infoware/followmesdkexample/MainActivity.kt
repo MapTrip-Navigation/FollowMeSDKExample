@@ -163,16 +163,9 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
             ComputationSite.ONBOARD, ComputationSite.ONBOARD, ComputationSite.ONBOARD,
             ComputationSite.NONE)
 
-        /**
-         *  Sets the path to the App
-         */
-        val appPath = Environment.getExternalStorageDirectory().toString() + "/FollowMeSDKExample"
-        val dataPath = "${appPath}/mapdata"
-
         // registers Listener for License & SDK-init
         ApiHelper.Instance().addInitListener(this)
         ApiHelper.Instance().addLicenseListener(this)
-        ApiHelper.Instance().initPaths(appPath, dataPath)
 
         var initErr: ApiError? = null
 
@@ -202,7 +195,7 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
      */
     private fun registerGPSListener() {
         Log.d(TAG, "GPS Listener registered")
-        Gps.registerGpsListener {
+        Gps.addGpsListener {
                 latitude, longitude, altitude, speedMetersPerSecond,
                 course, horizontalAccuracy, gpstime ->
             val info = String

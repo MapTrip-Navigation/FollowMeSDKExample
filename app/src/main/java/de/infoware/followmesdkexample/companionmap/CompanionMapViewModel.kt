@@ -90,7 +90,8 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
              *  Allows to create a runnable that will execute on the MapTrip SDK thread and bundle multiple consecutive calls to be executed in a single Task
              */
             ApiHelper.Instance().queueApiCall(Runnable {
-                FollowMeRoute.registerFollowMeRouteListener(this)
+                FollowMeRoute.removeAllFollowMeRouteListeners()
+                FollowMeRoute.addFollowMeRouteListener(this)
 
                 // fetches the selected File from the Repo
                 selectedFile = FollowMeFileRepo.getFileByName(filename)
@@ -106,7 +107,8 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
                     }
 
                     // Registers the ViewModel as TaskListener for the FollowMeRoute tasks (e.g. calculating the tour)
-                    currentFollowMeRoute!!.registerTaskListener(this)
+                    currentFollowMeRoute!!.removeAllTaskListeners()
+                    currentFollowMeRoute!!.addTaskListener(this)
                     currentFollowMeRoute!!.calculate(true, false)
 
                     // sets the global variable

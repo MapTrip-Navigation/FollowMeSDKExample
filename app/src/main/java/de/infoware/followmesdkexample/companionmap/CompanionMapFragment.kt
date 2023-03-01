@@ -72,7 +72,7 @@ class CompanionMapFragment : Fragment() {
          *  ViewModel needs to implement the NavigationListener & MapTripTTSListener Interface
          *  TTS needs to be enabled explicitly, and can be disabled in the same way
          */
-        Navigation.registerNavigationListener(viewModel)
+        Navigation.addNavigationListener(viewModel)
         MaptripTTSManager.Instance()?.setListener(viewModel)
         MaptripTTSManager.Instance()?.enableTTS(requireActivity().applicationContext)
     }
