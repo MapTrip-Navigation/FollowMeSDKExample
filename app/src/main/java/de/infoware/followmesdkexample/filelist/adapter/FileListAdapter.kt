@@ -5,14 +5,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
-import de.infoware.followmesdkexample.R
+import de.infoware.followmesdkexample.databinding.LayoutListitemFilelistBinding
 import de.infoware.followmesdkexample.followme.data.FollowMeTour
-import kotlinx.android.synthetic.main.layout_listitem_filelist.view.*
 
 /**
  *  Adapter for the RecyclerView responsible for displaying the available FollowMeTour Files
  */
 class FileListAdapter(private var files : List<FollowMeTour>) : RecyclerView.Adapter<FileListAdapter.ViewHolder>() {
+
+    private var _binding: LayoutListitemFilelistBinding? = null
+    private val binding get() = _binding!!
 
     // LiveData for the selected FollowMeTour
     val followMeTourObservable: MutableLiveData<FollowMeTour> by lazy {
@@ -22,11 +24,11 @@ class FileListAdapter(private var files : List<FollowMeTour>) : RecyclerView.Ada
     class ViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.layout_listitem_filelist, parent, false)
-        val holder = ViewHolder(v)
+        _binding = LayoutListitemFilelistBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val holder = ViewHolder(binding.root)
 
         // item click-listener to post the selected FollowMeTour
-        holder.itemView.tvFileName.setOnClickListener { followMeTourObservable.postValue(files[holder.adapterPosition]) }
+        binding.tvFileName.setOnClickListener { followMeTourObservable.postValue(files[holder.adapterPosition]) }
 
         return holder
     }
@@ -36,7 +38,7 @@ class FileListAdapter(private var files : List<FollowMeTour>) : RecyclerView.Ada
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val file = files[position]
 
-        holder.itemView.tvFileName.text = file.fileName
+        binding.tvFileName.text = file.fileName
     }
 
     /**

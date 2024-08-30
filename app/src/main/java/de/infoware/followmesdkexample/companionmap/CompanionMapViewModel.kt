@@ -200,6 +200,7 @@ class CompanionMapViewModel : ViewModel(), NavigationListener, MaptripTTSListene
             this.navigationRunning = true
             // LiveData to enable the Navigation-info
             taskFinished.postValue(Any())
+            progress.postValue(100)
             // Zoom to current position
             this.autoZoomToCurrentPosition()
             // Starts the followme-collect arrows

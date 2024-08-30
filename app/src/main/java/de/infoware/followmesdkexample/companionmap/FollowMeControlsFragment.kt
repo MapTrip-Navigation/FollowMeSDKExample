@@ -9,7 +9,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import de.infoware.android.api.enums.FmrActionType
 import de.infoware.followmesdkexample.R
-import kotlinx.android.synthetic.main.follow_me_controls_fragment.*
+import de.infoware.followmesdkexample.databinding.FollowMeControlsFragmentBinding
 
 /**
  *  Fragment for the FollowMe specific control- and UI-elements
@@ -20,6 +20,10 @@ class FollowMeControlsFragment : Fragment() {
     companion object {
         fun newInstance() = FollowMeControlsFragment()
     }
+
+    private var _binding: FollowMeControlsFragmentBinding? = null
+
+    private val binding get() = _binding!!
 
     private lateinit var viewModel: CompanionMapViewModel
 
@@ -34,14 +38,15 @@ class FollowMeControlsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.follow_me_controls_fragment, container, false)
+        _binding = FollowMeControlsFragmentBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
         // the ViewModelProvider provides a new instance of the ViewModel if there is none, and uses the existing instance of the ViewModel if possible
-        viewModel = ViewModelProvider(requireActivity()).get(CompanionMapViewModel::class.java)
+        viewModel = ViewModelProvider(requireActivity())[CompanionMapViewModel::class.java]
 
         initListener()
     }
@@ -54,28 +59,28 @@ class FollowMeControlsFragment : Fragment() {
             when (collectionState) {
 
                 FmrActionType.COLLECT_BOTH -> {
-                    ivCollectLeft.visibility = View.VISIBLE
-                    ivCollectRight.visibility = View.VISIBLE
+                    binding.ivCollectLeft.visibility = View.VISIBLE
+                    binding.ivCollectRight.visibility = View.VISIBLE
                 }
 
                 FmrActionType.COLLECT_LEFT -> {
-                    ivCollectLeft.visibility = View.VISIBLE
-                    ivCollectRight.visibility = View.GONE
+                    binding.ivCollectLeft.visibility = View.VISIBLE
+                    binding.ivCollectRight.visibility = View.GONE
                 }
 
                 FmrActionType.COLLECT_RIGHT -> {
-                    ivCollectLeft.visibility = View.GONE
-                    ivCollectRight.visibility = View.VISIBLE
+                    binding.ivCollectLeft.visibility = View.GONE
+                    binding.ivCollectRight.visibility = View.VISIBLE
                 }
 
                 FmrActionType.COLLECT_UNKNOWN -> {
-                    ivCollectLeft.visibility = View.GONE
-                    ivCollectRight.visibility = View.GONE
+                    binding.ivCollectLeft.visibility = View.GONE
+                    binding.ivCollectRight.visibility = View.GONE
                 }
 
                 FmrActionType.TRANSFER_START -> {
-                    ivCollectLeft.visibility = View.GONE
-                    ivCollectRight.visibility = View.GONE
+                    binding.ivCollectLeft.visibility = View.GONE
+                    binding.ivCollectRight.visibility = View.GONE
                 }
 
                 else -> {
@@ -89,11 +94,11 @@ class FollowMeControlsFragment : Fragment() {
         // alternates the image resources
         val blinkObserver = Observer<Boolean> { blink ->
             if(blink) {
-                ivCollectLeft.setImageResource(leftArrowColored)
-                ivCollectRight.setImageResource(rightArrowColored)
+                binding.ivCollectLeft.setImageResource(leftArrowColored)
+                binding.ivCollectRight.setImageResource(rightArrowColored)
             } else {
-                ivCollectLeft.setImageResource(leftArrowGrey)
-                ivCollectRight.setImageResource(rightArrowGrey)
+                binding.ivCollectLeft.setImageResource(leftArrowGrey)
+                binding.ivCollectRight.setImageResource(rightArrowGrey)
             }
         }
         this.viewModel.switchCollectionImage.observe(this.viewLifecycleOwner, blinkObserver)

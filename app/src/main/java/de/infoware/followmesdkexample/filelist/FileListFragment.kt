@@ -14,9 +14,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import de.infoware.followmesdkexample.MainActivity
 import de.infoware.followmesdkexample.R
+import de.infoware.followmesdkexample.databinding.FilelistFragmentBinding
 import de.infoware.followmesdkexample.filelist.adapter.FileListAdapter
 import de.infoware.followmesdkexample.followme.data.FollowMeTour
-import kotlinx.android.synthetic.main.filelist_fragment.*
 
 /**
  *  Fragment for the file selection screen
@@ -30,6 +30,9 @@ class FileListFragment : Fragment() {
         fun newInstance() = FileListFragment()
     }
 
+    var _binding: FilelistFragmentBinding? = null
+    private val binding get() = _binding!!
+
     // The FileListAdapter for the RecyclerView
     private lateinit var adapter : FileListAdapter
 
@@ -40,19 +43,18 @@ class FileListFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.filelist_fragment, container, false)
+        _binding = FilelistFragmentBinding.inflate(inflater, container, false)
+        binding.rvFileList.layoutManager = LinearLayoutManager(requireActivity().applicationContext)
+        return binding.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewModel = ViewModelProvider(requireActivity())[FilelistViewModel::class.java]
 
-        // the ViewModelProvider provides a new instance of the ViewModel if there is none, and uses the existing instance of the ViewModel if possible
-        viewModel = ViewModelProvider(requireActivity()).get(FilelistViewModel::class.java)
-
-        rvFileList.layoutManager = LinearLayoutManager(requireActivity().applicationContext)
         // Creates the FileListAdapter with an empty list
         adapter = FileListAdapter(listOf())
-        rvFileList.adapter = adapter
+        binding.rvFileList.adapter = adapter
 
         initListener()
     }
@@ -87,7 +89,7 @@ class FileListFragment : Fragment() {
      *  Shows a Toast that no files were found in the /user/routes/directory
      */
     private fun showNoFilesFoundToast() {
-        Toast.makeText(requireActivity(), "No files found in directory /user/routes", Toast.LENGTH_LONG).show()
+        Toast.makeText(requireActivity(), "No files found in directory", Toast.LENGTH_LONG).show()
     }
 
     /**

@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
@@ -173,10 +174,12 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
             initErr = ApiHelper.Instance().initialize(applicationContext, compParams, this)
         } catch (exc: RuntimeException) {
             Log.e(TAG, "ApiHelper initialize failed. RuntimeException: " + exc.message)
+            Toast.makeText(this, "ApiHelper initialize failed with RuntimeException", Toast.LENGTH_LONG).show()
         }
 
         if (initErr != ApiError.OK) {
             Log.e(TAG, "ApiHelper initialize failed. Error: $initErr")
+            Toast.makeText(this, "ApiHelper initialize failed with $initErr", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -285,7 +288,7 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
      *  @param error ApiError
      */
     override fun onApiLicenseError(error: ApiError?) {
-        Log.e(TAG, error.toString())
+        Log.e(TAG, "onApiLicenseError $error Licence.getLastError ${Licence.getLastError()}")
     }
 
     /**

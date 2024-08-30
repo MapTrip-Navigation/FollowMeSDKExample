@@ -7,8 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import de.infoware.followmesdkexample.MainActivity
-import de.infoware.followmesdkexample.R
-import kotlinx.android.synthetic.main.main_menu_fragment.*
+import de.infoware.followmesdkexample.databinding.MainMenuFragmentBinding
 
 /**
  *  Fragment for the MainMenu (currently only "List" Button available)
@@ -19,26 +18,29 @@ class MainMenuFragment : Fragment() {
         fun newInstance() = MainMenuFragment()
     }
 
+    private var _binding: MainMenuFragmentBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var viewModel: MainMenuViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.main_menu_fragment, container, false)
+        _binding = MainMenuFragmentBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         // the ViewModelProvider provides a new instance of the ViewModel if there is none, and uses the existing instance of the ViewModel if possible
-        viewModel = ViewModelProvider(requireActivity()).get(MainMenuViewModel::class.java)
+        viewModel = ViewModelProvider(requireActivity())[MainMenuViewModel::class.java]
 
         initListener()
     }
 
     private fun initListener() {
-        btnShowList.setOnClickListener { (activity as MainActivity).switchToFilelistFragment() }
+        binding.btnShowList.setOnClickListener { (requireActivity() as MainActivity).switchToFilelistFragment() }
     }
 
 }

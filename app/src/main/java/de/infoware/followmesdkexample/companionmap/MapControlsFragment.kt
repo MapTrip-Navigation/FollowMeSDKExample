@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import de.infoware.followmesdkexample.R
-import kotlinx.android.synthetic.main.map_controls_fragment.*
+import de.infoware.followmesdkexample.databinding.MapControlsFragmentBinding
 import java.util.*
 
 /**
@@ -24,6 +24,9 @@ class MapControlsFragment : Fragment() {
         private const val TAG = "MapControlsFragment"
     }
 
+    private var _binding: MapControlsFragmentBinding? = null
+    private val binding get() = _binding!!
+
     // the ViewModel used for this Fragment
     private lateinit var viewModel: CompanionMapViewModel
     // boolean to check if the route is done calculating
@@ -35,15 +38,13 @@ class MapControlsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-        return inflater.inflate(R.layout.map_controls_fragment, container, false)
+        _binding = MapControlsFragmentBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        // the ViewModelProvider provides a new instance of the ViewModel if there is none, and uses the existing instance of the ViewModel if possible
-        viewModel = ViewModelProvider(requireActivity()).get(CompanionMapViewModel::class.java)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewModel = ViewModelProvider(requireActivity())[CompanionMapViewModel::class.java]
 
         initListener()
     }
@@ -58,30 +59,30 @@ class MapControlsFragment : Fragment() {
         // Sets the ImageResource for the next crossing
         val crossingPictoFile = Observer<String> { pictoFile ->
             val drawableId = resources.getIdentifier(pictoFile.toLowerCase(Locale.ROOT) + "_black", "drawable", context?.packageName)
-            ivPictogram.setImageResource(drawableId)
+            binding.ivPictogram.setImageResource(drawableId)
         }
 
         // Observer for the crossingInfoReceived Callback: actualStreetName
         // Sets the tvProgress TextView to the currentStreetName, if the route has finished calculating
         val currentStreetObserver = Observer<String> { currentStreetName ->
-            if(routeCalculated && !routeFinished) tvProgress.text = currentStreetName
+            if(routeCalculated && !routeFinished) binding.tvProgress.text = currentStreetName
         }
         // Observer for the crossingInfoReceived Callback: nextStreetName
         val nextStreetObserver = Observer<String> { nextStreetName ->
-            tvNextStreet.text = nextStreetName
+            binding.tvNextStreet.text = nextStreetName
         }
         // Observer for the crossingInfoReceived Callback: metersToCrossing
         val metersToCrossingObserver = Observer<Int> { metersToCrossing ->
-            if(metersToCrossing >= 0) tvMetersToCrossing.text = "$metersToCrossing m"
+            if(metersToCrossing >= 0) binding.tvMetersToCrossing.text = "$metersToCrossing m"
         }
         // Observer for the crossingInfoReceived Callback: secondsToCrossing
         val secondsToCrossingObserver = Observer<Int> { secondsToCrossing ->
-            if(secondsToCrossing >= 0) tvSecondsToCrossing.text = "$secondsToCrossing s"
+            if(secondsToCrossing >= 0) binding.tvSecondsToCrossing.text = "$secondsToCrossing s"
         }
 
         // Observer for the destinationInfoReceived Callback: metersToDestination
         val metersToDestinationObserver = Observer<Int> { metersToDestination ->
-            if(metersToDestination >= 0) tvMetersToDestination.text = "$metersToDestination" + "m"
+            if(metersToDestination >= 0) binding.tvMetersToDestination.text = "$metersToDestination" + "m"
         }
         // Obsever for the destinationInfoReceived Callback: secondsToDestination
         val secondsToDestinationObserver = Observer<Int> { secondsToDestination ->
@@ -92,8 +93,8 @@ class MapControlsFragment : Fragment() {
         // Hides the Navigation-Information when the destination is reached
         val destinationReachedObserver = Observer<Int> {
             this.routeFinished = true
-            clNavigationInfo.visibility = View.GONE
-            tvProgress.visibility = View.GONE
+            binding.clNavigationInfo.visibility = View.GONE
+            binding.tvProgress.visibility = View.GONE
         }
 
         // Observer for the taskProgress Callback
@@ -102,23 +103,23 @@ class MapControlsFragment : Fragment() {
             if(progress >= 100) {
                 routeCalculated = true
             } else {
-                tvProgress.text = "Calculating Route.. ${progress}%"
+                binding.tvProgress.text = "Calculating Route.. ${progress}%"
             }
         }
 
         // Observer for the task-state
         // Sets the Navigation-Info to visible, after the route is calculated
         val taskFinishedObserver = Observer<Any> {
-            if(!routeFinished) clNavigationInfo.visibility = View.VISIBLE
+            if(!routeFinished) binding.clNavigationInfo.visibility = View.VISIBLE
         }
 
         // Observer for the currentMuteOption
         // Sets the Button BackgroundResource
         val muteObserver = Observer<Boolean> { isMute ->
             if(isMute) {
-                btnChangeMute.setBackgroundResource(R.drawable.button_mute)
+                binding.btnChangeMute.setBackgroundResource(R.drawable.button_mute)
             } else {
-                btnChangeMute.setBackgroundResource(R.drawable.button_no_mute)
+                binding.btnChangeMute.setBackgroundResource(R.drawable.button_no_mute)
             }
         }
 
@@ -138,17 +139,17 @@ class MapControlsFragment : Fragment() {
 
         viewModel.currentMuteOption.observe(this.viewLifecycleOwner, muteObserver)
 
-        btnCenterMap.setOnClickListener {
+        binding.btnCenterMap.setOnClickListener {
                 v ->
             viewModel.autoZoomToCurrentPosition()
         }
 
-        btnChangePerspective.setOnClickListener {
+        binding.btnChangePerspective.setOnClickListener {
                 v ->
             viewModel.switchPerspective()
         }
 
-        btnChangeMute.setOnClickListener {
+        binding.btnChangeMute.setOnClickListener {
                 v ->
             viewModel.switchMuteOption()
         }

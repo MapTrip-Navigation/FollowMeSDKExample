@@ -1,10 +1,10 @@
 package de.infoware.followmesdkexample.companionmap
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -12,9 +12,8 @@ import de.infoware.android.api.IwMapView
 import de.infoware.android.api.Mapviewer
 import de.infoware.android.api.Navigation
 import de.infoware.android.api.enums.MapPerspective
-import de.infoware.followmesdkexample.R
+import de.infoware.followmesdkexample.databinding.CompanionMapFragmentBinding
 import de.infoware.followmesdkexample.sound.MaptripTTSManager
-import kotlinx.android.synthetic.main.companion_map_fragment.*
 
 /**
  *  Fragment for the CompanionMap
@@ -27,6 +26,11 @@ class CompanionMapFragment : Fragment() {
         fun newInstance() = CompanionMapFragment()
         private const val TAG = "CompanionMapFragment"
     }
+
+    private val binding: CompanionMapFragmentBinding get() = _binding!!
+
+    var _binding : CompanionMapFragmentBinding? = null
+
 
     // The ViewModel used for this Fragment
     private lateinit var viewModel: CompanionMapViewModel
@@ -54,16 +58,15 @@ class CompanionMapFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.companion_map_fragment, container, false)
+        _binding = CompanionMapFragmentBinding.inflate(inflater, container, false)
+        mapView = binding.map
+
+        return binding.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        // the ViewModelProvider provides a new instance of the ViewModel if there is none, and uses the existing instance of the ViewModel if possible
-        viewModel = ViewModelProvider(requireActivity()).get(CompanionMapViewModel::class.java)
-
-        mapView = map
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewModel = ViewModelProvider(requireActivity())[CompanionMapViewModel::class.java]
 
         initListener()
 

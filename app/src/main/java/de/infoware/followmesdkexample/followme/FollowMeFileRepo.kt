@@ -13,6 +13,11 @@ object FollowMeFileRepo {
 
     private val TAG = "FollowMeFileRepo"
 
+    const val local = "Local"
+    const val server = "Server"
+
+    private val routeFolder = server
+
     // List of FollowMeTour files
     private var loadedFiles = mutableListOf<FollowMeTour>()
 
@@ -38,41 +43,16 @@ object FollowMeFileRepo {
      *  Loads all available files in the /user/routes/ directory with up to one subdirectory
      *  @return [List]<[FollowMeTour]> a list of all found FollowMeTour files. Returns empty list if no files were found
      */
-    fun loadAllFilesInRoute() : List<FollowMeTour> {
-        val followMeFiles = mutableListOf<FollowMeTour>()
+    fun loadAllFilesInRoute(): List<FollowMeTour> {
+        val directory = File("${ApiHelper.Instance().userDataPath}/followMeRoutes/$routeFolder")
+        if (!directory.exists()) return emptyList() // Early return if directory doesn't exist
 
-        var tour: FollowMeTour
+        val followMeFiles = directory.walkTopDown() // Use walkTopDown for recursive traversal
+            .filter { it.isFile && (it.extension == "nmea" || it.extension == "csv") } // Filter for files with correct extensions
+            .map { FollowMeTour(it.nameWithoutExtension, it.extension, it.absolutePath) } // Map files to FollowMeTour objects
+            .toMutableList()
 
-        val path = "${ApiHelper.Instance().userDataPath}/followMeRoutes/Local"
-        val directory = File(path)
-        if(!directory.exists()) {
-            return followMeFiles
-        }
-        val files = directory.listFiles()
-
-        for (i in files!!.indices) {
-            if(files[i].isDirectory) {
-                val subFiles = files[i].listFiles()
-                for(file in subFiles!!.indices) {
-                    if(subFiles[i].extension != "nmea" && subFiles[i].extension != "csv") {
-                        continue
-                    }
-                    tour = FollowMeTour(subFiles[i].nameWithoutExtension, subFiles[i].extension, subFiles[i].absolutePath)
-                    followMeFiles.add(tour)
-                }
-            } else {
-                if(files[i].extension != "nmea" && files[i].extension != "csv") {
-                    continue
-                }
-                tour = FollowMeTour(files[i].nameWithoutExtension, files[i].extension, files[i].absolutePath)
-                followMeFiles.add(tour)
-            }
-        }
-
-        if(followMeFiles.isEmpty()) {
-            return followMeFiles
-        }
-        loadedFiles = followMeFiles
+        loadedFiles = followMeFiles// Update loadedFiles if necessary
         return followMeFiles
     }
 }
