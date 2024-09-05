@@ -61,5 +61,5 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
 
     // MapTrip SDK
-    implementation "de.infoware:maptrip-sdk:9.7.2"
+    implementation "de.infoware:maptrip-sdk:9.7.3"
 }
