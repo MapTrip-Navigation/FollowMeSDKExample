@@ -47,6 +47,8 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
     // LiveData to wait for all necessary permissions to be granted
     private val permissionsGranted = MutableLiveData<Boolean>()
 
+    private var ONLINE_ONLY = true // App only uses online maps and navigation
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -159,10 +161,18 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
          *      pois
          *      traffic
          */
-        val compParams = ComputationSiteParameters(
-            ComputationSite.ONBOARD,
-            ComputationSite.ONBOARD, ComputationSite.ONBOARD, ComputationSite.ONBOARD,
-            ComputationSite.NONE)
+        val compParams = if(ONLINE_ONLY) {
+            ComputationSiteParameters(
+                ComputationSite.OFFBOARD,
+                ComputationSite.OFFBOARD, ComputationSite.ONBOARD, ComputationSite.ONBOARD,
+                ComputationSite.NONE
+            )
+        } else {
+            ComputationSiteParameters(
+                ComputationSite.ONBOARD,
+                ComputationSite.BOTH, ComputationSite.ONBOARD, ComputationSite.ONBOARD,
+                ComputationSite.NONE)
+        }
 
         // registers Listener for License & SDK-init
         ApiHelper.Instance().addInitListener(this)
@@ -255,6 +265,13 @@ class MainActivity : AppCompatActivity(), ApiLicenseListener, ApiInitListener {
      */
     override fun onApiInitialized() {
         Log.d(TAG, "onApiInitialized")
+
+        if(ONLINE_ONLY) {
+            Navigation.setAllowedComputationSite(ComputationSite.OFFBOARD)
+        } else {
+            Navigation.setAllowedComputationSite(ComputationSite.BOTH)
+        }
+
         registerGPSListener()
         startGPSProcessing()
         /**
